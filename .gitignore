@@ -1,3 +1,7 @@
+# temporary local copy of upstream
+/zoxide
+/target_nix
+
 ### Custom ###
 .vscode/
 .DS_Store

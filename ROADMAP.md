@@ -14,6 +14,17 @@ After each atomic task completion, I will:
 
 This ensures you maintain control while I handle the technical execution.
 
+### Checkpoint Commit Protocol
+After successful task completion and validation, I will execute checkpoint commits:
+0. Ask user: **"Ready to commit this step?"**
+1. Review completed ROADMAP step for commit context
+2. Stage all changes: `git add .`
+3. Show diff: `git diff --staged` (what actually changed)
+4. Craft commit message combining ROADMAP step + actual changes
+5. Commit and push in single efficient cycle
+
+**Rationale**: Preserve implementation history with precise commit messages reflecting both planned steps and actual changes made.
+
 ## Phase 0: Foundation (Immediate) - ATOMIC TASKS
 **STATUS: ✅ COMPLETE**
 
@@ -283,6 +294,15 @@ complete -F _z_complete z
 - **Database optimization**: Faster deserialization for read-only access
 - **Incremental loading**: Load database lazily for completion
 - **Benchmark suite**: Automated performance regression testing
+
+## Project Architecture Requirements
+
+### **CRITICAL: Binary-Only Crate**
+- **DO NOT** convert to library crate (`src/lib.rs`)
+- **MAINTAIN** binary-only structure with `src/main.rs` as entry point
+- **RATIONALE**: Single-purpose CLI tool, no library consumers intended
+- **TEST ACCESS**: Use integration tests that spawn the binary, NOT unit tests that import modules
+- **VIOLATION**: Converting to library crate goes against project goals of simplicity
 
 ## Implementation Phases Summary
 

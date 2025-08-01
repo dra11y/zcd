@@ -6,8 +6,25 @@ use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
 
-// Use the Shell enum from the main project
-use zcd::shell_gen::Shell;
+/// Supported shell types for testing
+#[derive(Debug, Clone, Copy)]
+enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+    PowerShell,
+}
+
+impl Shell {
+    fn as_str(self) -> &'static str {
+        match self {
+            Shell::Bash => "bash",
+            Shell::Zsh => "zsh",
+            Shell::Fish => "fish",
+            Shell::PowerShell => "powershell",
+        }
+    }
+}
 
 /// Test framework for isolated zcd testing
 struct ZcdTestFramework {
@@ -84,7 +101,7 @@ impl ZcdTestFramework {
 
     /// Test that a shell is available on the system
     fn require_shell(shell: Shell) -> Result<(), Box<dyn std::error::Error>> {
-        Command::new("which").arg(&shell.to_string()).assert().success();
+        Command::new("which").arg(shell.as_str()).assert().success();
         Ok(())
     }
 
@@ -95,7 +112,7 @@ impl ZcdTestFramework {
         prefix: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Test shell init generation works
-        self.get_init_script(&shell.to_string())?;
+        self.get_init_script(shell.as_str())?;
 
         // Create test directories and add to database
         let test_dirs =
@@ -106,7 +123,7 @@ impl ZcdTestFramework {
         let completions = self.get_completions(&format!("{}_proj", prefix))?;
 
         // Should return project directories
-        assert!(completions.len() >= 2, "Should find {} project directories", shell);
+        assert!(completions.len() >= 2, "Should find {:?} project directories", shell);
         assert!(
             completions.iter().any(|c| c.contains(&format!("{}_project1", prefix))),
             "Should include {}_project1",
@@ -158,7 +175,7 @@ fn test_zsh_init_generation() -> Result<(), Box<dyn std::error::Error>> {
     let framework = ZcdTestFramework::new()?;
 
     // Test that zsh init generates without errors
-    let init_script = framework.get_init_script(&Shell::Zsh.to_string())?;
+    let init_script = framework.get_init_script(Shell::Zsh.as_str())?;
 
     // Verify it contains expected zsh completion components
     assert!(init_script.contains("compdef"), "Should contain zsh compdef");
@@ -176,7 +193,7 @@ fn test_bash_init_generation() -> Result<(), Box<dyn std::error::Error>> {
     let framework = ZcdTestFramework::new()?;
 
     // Test that bash init generates without errors
-    let init_script = framework.get_init_script(&Shell::Bash.to_string())?;
+    let init_script = framework.get_init_script(Shell::Bash.as_str())?;
 
     // Verify it contains expected bash completion components
     assert!(init_script.contains("complete -F"), "Should contain bash complete command");
