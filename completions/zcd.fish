@@ -55,7 +55,8 @@ complete -c zcd -n "__fish_zcd_using_subcommand edit; and __fish_seen_subcommand
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and __fish_seen_subcommand_from reload" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and __fish_seen_subcommand_from reload" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand import" -l from -d 'Application to import from' -r -f -a "autojump\t''
-z\t''"
+z\t''
+zoxide\t''"
 complete -c zcd -n "__fish_zcd_using_subcommand import" -l merge -d 'Merge into existing database'
 complete -c zcd -n "__fish_zcd_using_subcommand import" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand import" -s V -l version -d 'Print version'

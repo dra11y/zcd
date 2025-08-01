@@ -1,47 +1,12 @@
 # zcd clippy configuration
-# Enforces modern Rust code quality standards
-
-# Deny manual string creation patterns
-manual-string-new = "deny"
-
-# Deny redundant static lifetimes
-redundant-static-lifetimes = "deny"
-
-# Deny matching on same arms
-match-same-arms = "deny"
-
-# Enforce modern string formatting
-manual-str-repeat = "deny"
-redundant-allocation = "deny"
-format-push-string = "deny"
-
-# Performance lints
-single-char-pattern = "deny"
-single-char-add-str = "deny"
-string-add = "deny"
-string-add-assign = "deny"
-
-# Code style preferences
-needless-pass-by-value = "deny"
-trivially-copy-pass-by-ref = "deny"
-large-types-passed-by-value = "deny"
-
-# Error handling
-map-err-ignore = "deny"
-expect-used = "deny"
-unwrap-used = "deny"
-
-# Safety
-indexing-slicing = "deny"
-panic = "deny"
-
-# Documentation requirements for public API
-missing-docs-in-private-items = "allow" # Only enforce docs on public items
-undocumented-unsafe-blocks = "deny"
-
-# Allow certain patterns we use intentionally
-# (none currently - we follow standard clippy recommendations)
+# Modern Rust code quality standards for current Clippy version
 
 # Performance thresholds
 too-many-arguments-threshold = 5
 type-complexity-threshold = 100
+cognitive-complexity-threshold = 25
+
+# Allow certain patterns during development
+allow-unwrap-in-tests = true
+allow-panic-in-tests = true
+allow-print-in-tests = true

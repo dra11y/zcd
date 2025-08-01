@@ -52,10 +52,8 @@ impl Database {
                     )
                 })?;
 
-                // Try to migrate from existing zoxide database if this is first run
-                let mut db = Self::new(path, Vec::new(), |_| Vec::new(), false);
-                Self::try_migrate_from_zoxide(&mut db)?;
-                Ok(db)
+                // Create empty database - migration is now manual via `zcd import`
+                Ok(Self::new(path, Vec::new(), |_| Vec::new(), false))
             }
             Err(e) => Err(e).with_context(|| {
                 format!("could not read from database: {path}", path = path.display())
@@ -199,100 +197,6 @@ impl Database {
         self.borrow_dirs()
     }
 
-    /// Attempts to migrate data from an existing zoxide database on first run
-    fn try_migrate_from_zoxide(db: &mut Self) -> Result<()> {
-        // Try to find original zoxide database using original _ZO_DATA_DIR
-        let zoxide_data_dir = match std::env::var_os("_ZO_DATA_DIR") {
-            Some(path) => {
-                eprintln!(
-                    "zcd: Looking for zoxide database using _ZO_DATA_DIR: {}",
-                    path.to_string_lossy()
-                );
-                PathBuf::from(path)
-            }
-            None => {
-                let data_dir = dirs::data_local_dir()
-                    .context("could not find data directory for zoxide migration")?
-                    .join("zoxide");
-                eprintln!(
-                    "zcd: Looking for zoxide database at default location: {}",
-                    data_dir.display()
-                );
-                data_dir
-            }
-        };
-
-        let zoxide_db_path = zoxide_data_dir.join("db.zo");
-
-        // Only attempt migration if zoxide database exists
-        if !zoxide_db_path.exists() {
-            eprintln!(
-                "zcd: No existing zoxide database found at {path}",
-                path = zoxide_db_path.display()
-            );
-            return Ok(());
-        }
-
-        eprintln!(
-            "zcd: Found existing zoxide database, attempting migration from {path}",
-            path = zoxide_db_path.display()
-        );
-
-        // Read and deserialize zoxide database
-        match fs::read(&zoxide_db_path) {
-            Ok(bytes) => {
-                match Self::deserialize(&bytes) {
-                    Ok(dirs) => {
-                        let entry_count = dirs.len();
-                        eprintln!(
-                            "zcd: Successfully read {entry_count} entries from zoxide database"
-                        );
-
-                        for dir in dirs {
-                            db.add_unchecked(dir.path.as_ref(), dir.rank, dir.last_accessed);
-                        }
-
-                        if db.dirty() {
-                            db.dedup();
-                            // Save the migrated database immediately
-                            match db.save() {
-                                Ok(()) => {
-                                    eprintln!(
-                                        "zcd: Successfully migrated {entry_count} entries from zoxide database"
-                                    );
-                                }
-                                Err(e) => {
-                                    eprintln!(
-                                        "zcd: Warning - migrated data but failed to save: {e}"
-                                    );
-                                }
-                            }
-                        } else {
-                            eprintln!("zcd: No entries to migrate from zoxide database");
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!(
-                            "zcd: Warning - found zoxide database but could not parse it: {e}"
-                        );
-                        eprintln!(
-                            "zcd: This may be due to version incompatibility - continuing without migration"
-                        );
-                    }
-                }
-            }
-            Err(e) => {
-                eprintln!(
-                    "zcd: Warning - could not read zoxide database file {path}: {e}",
-                    path = zoxide_db_path.display()
-                );
-                eprintln!("zcd: Continuing without migration");
-            }
-        }
-
-        Ok(())
-    }
-
     fn serialize(dirs: &[Dir<'_>]) -> Result<Vec<u8>> {
         (|| -> bincode::Result<_> {
             // Preallocate buffer with combined size of sections.
@@ -309,7 +213,7 @@ impl Database {
         .context("could not serialize database")
     }
 
-    fn deserialize(bytes: &[u8]) -> Result<Vec<Dir>> {
+    pub fn deserialize(bytes: &[u8]) -> Result<Vec<Dir>> {
         // Assume a maximum size for the database. This prevents bincode from throwing
         // strange errors when it encounters invalid data.
         const MAX_SIZE: u64 = 32 << 20; // 32 MiB

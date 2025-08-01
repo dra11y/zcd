@@ -34,6 +34,11 @@ impl Run for Import {
                 import_z(&mut db, &buffer)?;
                 "z-compatible"
             }
+            ImportFrom::Zoxide => {
+                eprintln!("zcd: Importing zoxide database...");
+                import_zoxide(&mut db, &self.path)?;
+                "zoxide"
+            }
         };
 
         let final_count = db.dirs().len();
@@ -112,6 +117,35 @@ fn import_z(db: &mut Database, buffer: &str) -> Result<()> {
 
 fn sigmoid(x: f64) -> f64 {
     1.0 / (1.0 + (-x).exp())
+}
+
+fn import_zoxide(db: &mut Database, zoxide_db_path: &std::path::Path) -> Result<()> {
+    eprintln!("zcd: Reading zoxide database from {}", zoxide_db_path.display());
+
+    // Read and deserialize zoxide database using the same format as our database
+    let bytes = fs::read(zoxide_db_path).with_context(|| {
+        format!("could not read zoxide database file: {}", zoxide_db_path.display())
+    })?;
+
+    // Use Database's deserialize method to read the zoxide data
+    let dirs = Database::deserialize(&bytes)
+        .with_context(|| "could not deserialize zoxide database - may be incompatible version")?;
+
+    let entry_count = dirs.len();
+    eprintln!("zcd: Successfully read {entry_count} entries from zoxide database");
+
+    let mut imported = 0;
+    for dir in dirs {
+        db.add_unchecked(dir.path.as_ref(), dir.rank, dir.last_accessed);
+        imported += 1;
+    }
+
+    if db.dirty() {
+        db.dedup();
+        eprintln!("zcd: Processed {imported} zoxide entries, deduplicated database");
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
