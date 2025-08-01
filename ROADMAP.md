@@ -7,7 +7,14 @@ Fork zoxide to create working tab completion that functions like `git checkout <
 
 ### User Verification Points
 After each atomic task completion, I will:
-1. Show the### Phase 0: Foundation (Immediate) - ATOMIC TASKS
+1. Show the change made
+2. Run validation commands
+3. Report success/failure
+4. Ask: **"Proceed to next task?"** before continuing
+
+This ensures you maintain control while I handle the technical execution.
+
+## Phase 0: Foundation (Immediate) - ATOMIC TASKS
 **STATUS: PARTIALLY COMPLETE**
 
 #### ✅ **COMPLETED** - Verified by state detection:
@@ -28,59 +35,9 @@ After each atomic task completion, I will:
 - `/man` - Man pages, can regenerate with clap later ✅ **OK TO DELETE**
 - `/contrib` - Old completion scripts that don't work ✅ **OK TO DELETE**
 - `/zoxide.plugin.zsh` - Legacy plugin file ✅ **OK TO DELETE**
-- Decision: These were legacy/broken components, deletion accelerates cleanup ✅de
-2. Run validation commands
-3. Report success/failure
-4. Ask: **"Proceed to next task?"** before continuing
-
-This ensures you maintain control while I handle the technical execution.
+- Decision: These were legacy/broken components, deletion accelerates cleanup ✅
 
 ## Verification Protocols by Task Type
-
-### Phase 0: Foundation Tasks
-
-#### 0.3a: Remove askama dependency
-**Automated Validation:**
-```bash
-grep -q askama Cargo.toml && echo "FAILED: askama still present" || echo "SUCCESS: askama removed"
-cargo check 2>&1 | grep -i askama && echo "FAILED: askama references remain" || echo "SUCCESS: no askama refs"
-```
-**User Verification Required:** ❌ None - purely dependency removal
-**My Question:** "Askama removed and build succeeds. Continue to template deletion?"
-
-#### 0.3b: Delete templates/ directory
-**Automated Validation:**
-```bash
-ls templates/ 2>/dev/null && echo "FAILED: templates still exist" || echo "SUCCESS: templates deleted"
-```
-**User Verification Required:** ❌ None - simple file deletion
-**My Question:** "Templates directory deleted. Continue to shell.rs removal?"
-
-#### 0.3c: Remove shell.rs module
-**Automated Validation:**
-```bash
-ls src/shell.rs 2>/dev/null && echo "FAILED: shell.rs exists" || echo "SUCCESS: shell.rs removed"
-cargo check 2>&1 | grep "shell.rs\|shell::" && echo "FAILED: shell refs remain" || echo "SUCCESS: clean build"
-```
-**User Verification Required:** ❌ None - module cleanup
-**My Question:** "Shell.rs removed and all references cleaned. Continue to package rename?"
-
-#### 0.1a: Rename package zoxide → zcd
-**Automated Validation:**
-```bash
-cargo metadata --format-version 1 | jq -r '.packages[0].name'  # Should show "zcd"
-```
-**User Verification Required:** ✅ **Critical Decision Point**
-**My Question:** "Package renamed to 'zcd'. This changes the binary name - should I also update the repository description and any hardcoded 'zoxide' strings in help text now, or handle that separately?"
-
-#### 0.1b: Update help text branding
-**Automated Validation:**
-```bash
-cargo run -- --help 2>/dev/null | grep -c "zoxide"  # Should be 0
-cargo run -- --help 2>/dev/null | grep -c "zcd"     # Should be >0
-```
-**User Verification Required:** ✅ **User Experience Decision**
-**My Question:** "Help text updated. Please review the output of `zcd --help` - does the branding and description accurately reflect your vision for zcd vs zoxide?"
 
 ### Phase 1: Core Implementation Tasks
 
@@ -181,7 +138,10 @@ D) Prompt user for migration preference?"
 - **Design Decision**: API or architectural choices that impact future development
 - **Manual Testing**: Functionality that requires real shell environment testing
 - **Strategy Decision**: Platform support, feature scope, or maintenance burden choices
-- **Behavior Decision**: How the tool should behave in edge cases or user scenarioside` to `zcd` in Cargo.toml
+- **Behavior Decision**: How the tool should behave in edge cases or user scenarios
+
+### 0.1 Package Rename and Rebranding
+- **Package name**: Change `zoxide` to `zcd` in Cargo.toml
 - **Update all help text**: Change brand references from zoxide to zcd throughout codebase
 - **Database filename**: Use `~/.local/share/zcd/db.zo` instead of zoxide's path
 - **Environment variables**: Change `_ZCD_*` to `_ZCD_*` prefixes
