@@ -11,7 +11,7 @@ impl Run for Init {
         let cmd = if self.no_cmd { None } else { Some(self.cmd.as_str()) };
         let echo = config::echo();
         let resolve_symlinks = config::resolve_symlinks();
-        
+
         // Temporary placeholder - will be replaced with shell_gen module in Phase 1
         let source = match self.shell {
             InitShell::Bash => generate_bash_placeholder(cmd),
@@ -25,7 +25,7 @@ impl Run for Init {
             InitShell::Tcsh => generate_placeholder("tcsh", cmd),
             InitShell::Xonsh => generate_placeholder("xonsh", cmd),
         };
-        
+
         writeln!(io::stdout(), "{source}").pipe_exit("stdout")
     }
 }
@@ -33,40 +33,50 @@ impl Run for Init {
 // Temporary placeholder functions - will be replaced with shell_gen module
 fn generate_bash_placeholder(cmd: Option<&str>) -> String {
     let cmd = cmd.unwrap_or("z");
-    format!(r#"# Placeholder bash init for {cmd}
+    format!(
+        r#"# Placeholder bash init for {cmd}
 # TODO: Replace with proper shell_gen implementation in Phase 1
 echo "zcd init not yet implemented - Phase 1 pending"
-"#)
+"#
+    )
 }
 
 fn generate_fish_placeholder(cmd: Option<&str>) -> String {
     let cmd = cmd.unwrap_or("z");
-    format!(r#"# Placeholder fish init for {cmd}
+    format!(
+        r#"# Placeholder fish init for {cmd}
 # TODO: Replace with proper shell_gen implementation in Phase 1
 echo "zcd init not yet implemented - Phase 1 pending"
-"#)
+"#
+    )
 }
 
 fn generate_zsh_placeholder(cmd: Option<&str>) -> String {
     let cmd = cmd.unwrap_or("z");
-    format!(r#"# Placeholder zsh init for {cmd}
+    format!(
+        r#"# Placeholder zsh init for {cmd}
 # TODO: Replace with proper shell_gen implementation in Phase 1
 echo "zcd init not yet implemented - Phase 1 pending"
-"#)
+"#
+    )
 }
 
 fn generate_powershell_placeholder(cmd: Option<&str>) -> String {
     let cmd = cmd.unwrap_or("z");
-    format!(r#"# Placeholder powershell init for {cmd}
+    format!(
+        r#"# Placeholder powershell init for {cmd}
 # TODO: Replace with proper shell_gen implementation in Phase 1
 Write-Output "zcd init not yet implemented - Phase 1 pending"
-"#)
+"#
+    )
 }
 
 fn generate_placeholder(shell: &str, cmd: Option<&str>) -> String {
     let cmd = cmd.unwrap_or("z");
-    format!(r#"# Placeholder {shell} init for {cmd}
+    format!(
+        r#"# Placeholder {shell} init for {cmd}
 # TODO: Replace with proper shell_gen implementation in Phase 1
 echo "zcd init not yet implemented - Phase 1 pending"
-"#)
+"#
+    )
 }

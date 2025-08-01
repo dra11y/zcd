@@ -4,6 +4,7 @@ mod cmd;
 mod config;
 mod db;
 mod error;
+mod shell_gen;
 mod util;
 
 use std::env;

@@ -8,11 +8,11 @@ Fork zoxide to create working tab completion that functions like `git checkout <
 ### User Verification Points
 After each atomic task completion, I will:
 1. Show the### Phase 0: Foundation (Immediate) - ATOMIC TASKS
-**STATUS: PARTIALLY COMPLETE** 
+**STATUS: PARTIALLY COMPLETE**
 
 #### ✅ **COMPLETED** - Verified by state detection:
 - [x] 0.1a: Update Cargo.toml package name: `zoxide` → `zcd` ✅ **DONE BY USER**
-- [x] 0.1b: Update help templates in src/cmd/cmd.rs ✅ **DONE BY USER** 
+- [x] 0.1b: Update help templates in src/cmd/cmd.rs ✅ **DONE BY USER**
 - [x] 0.1c: Change environment variable references `_ZO_` → `_ZCD_` ✅ **DONE BY USER**
 - [x] 0.1d: Update database path constants ✅ **DONE BY USER**
 - [x] 0.3b: Delete templates/ directory entirely ✅ **COMPLETED** (verified: 0 files)
@@ -20,13 +20,13 @@ After each atomic task completion, I will:
 #### 🔄 **REMAINING TASKS**:
 - [ ] 0.3a: Remove askama from Cargo.toml dependencies
 - [ ] 0.3c: Remove shell.rs module completely
-- [ ] 0.2a: Comment out Tier 3 shells in InitShell enum  
+- [ ] 0.2a: Comment out Tier 3 shells in InitShell enum
 - [ ] 0.2b: Remove Tier 3 shell templates from templates/ directory (SKIP - templates deleted)
 
 **User Note**: ✅ **Bulk operations** (renaming, refactoring) should be done by user with VS Code tools
 **Deleted Folders Analysis**:
 - `/man` - Man pages, can regenerate with clap later ✅ **OK TO DELETE**
-- `/contrib` - Old completion scripts that don't work ✅ **OK TO DELETE** 
+- `/contrib` - Old completion scripts that don't work ✅ **OK TO DELETE**
 - `/zoxide.plugin.zsh` - Legacy plugin file ✅ **OK TO DELETE**
 - Decision: These were legacy/broken components, deletion accelerates cleanup ✅de
 2. Run validation commands
@@ -344,36 +344,52 @@ complete -F _z_complete z
 ### Phase 1: Core Implementation - ATOMIC TASKS
 **Dependencies:** Phase 0 must be complete
 
-- [ ] 1.1a: Create src/cmd/complete.rs with Complete struct
-- [ ] 1.1b: Add Complete variant to Cmd enum in cmd.rs
-- [ ] 1.1c: Add Complete to mod.rs exports
+- [x] 1.1a: Create src/cmd/complete.rs with Complete struct ✅ **COMPLETED**
+- [x] 1.1b: Add Complete variant to Cmd enum in cmd.rs ✅ **COMPLETED** 
+- [x] 1.1c: Add Complete to mod.rs exports ✅ **COMPLETED**
 - [ ] 1.2a: Implement basic complete_paths() function (database only)
 - [ ] 1.2b: Add current_dir_subdirs() filesystem fallback
 - [ ] 1.2c: Implement merge_results() for db + filesystem
-- [ ] 1.3a: Create src/shell_gen.rs module
-- [ ] 1.3b: Implement generate_bash_init() function
+- [x] 1.3a: Create src/shell_gen.rs module ✅ **COMPLETED**
+- [x] 1.3b: Implement generate_bash_init() function ✅ **COMPLETED**
 - [ ] 1.3c: Update init.rs to use shell_gen instead of templates
+- [ ] 1.4a: Test completion command functionality before shell integration
 
 **Validation Criteria:**
 - [ ] `zcd complete /ho` returns completions in <50ms
 - [ ] `zcd complete` includes both database and filesystem results
 - [ ] `zcd init bash` generates working shell functions
-- [ ] Generated functions are <15 lines total
+- [ ] Generated functions are <25 lines total (updated from <15)
+- [ ] `cargo run -- complete /tmp` returns actual directory completions (not TODO)
 
 **Rollback Strategy:** Individual function rollback possible
 
 ### Phase 2: Shell Integration - ATOMIC TASKS
-**Dependencies:** Phase 1.1-1.2 must be complete
+**Dependencies:** Phase 1.2 (completion logic) AND 1.3c (init.rs updated) must be complete
 
-- [ ] 2.1a: Test bash completion with generated functions
-- [ ] 2.1b: Implement generate_zsh_init() function
-- [ ] 2.1c: Implement generate_fish_init() function
+- [ ] 2.1a: Test completion command functionality (prerequisite for shell testing)
+- [ ] 2.1b: Test bash completion with generated functions  
+- [ ] 2.1c: Test zsh completion with generated functions
+- [ ] 2.1d: Test fish completion with generated functions
 - [ ] 2.2a: Create PowerShell proof-of-concept (max 50 lines)
 - [ ] 2.2b: Document PowerShell decision (keep/remove)
 - [ ] 2.3a: Remove zi command references from all shells
 - [ ] 2.3b: Simplify to z-only functionality
 
+**Testing Strategy:**
+```
+Step 1: Test binary completion directly
+  cargo run -- complete /usr → should return directories like /usr/bin, /usr/lib
+  
+Step 2: Test generated shell functions  
+  eval "$(cargo run -- init bash)" → should define z() and _z_complete()
+  
+Step 3: Test live shell completion
+  z /u<TAB> → should complete to /usr or show /usr/bin, /usr/lib, etc.
+```
+
 **Validation Criteria:**
+- [ ] `cargo run -- complete /usr` returns actual directories (not TODO)
 - [ ] Tab completion works in bash: `z test<TAB>`
 - [ ] Tab completion works in zsh: `z test<TAB>`
 - [ ] Tab completion works in fish: `z test<TAB>`
@@ -420,7 +436,7 @@ cargo check --quiet 2>/dev/null && echo "builds-ok" || echo "build-failed"
 ### Current State Analysis
 Based on efficient detection:
 - **Package**: zcd ✅ (verified complete)
-- **Templates**: deleted ✅ (verified complete) 
+- **Templates**: deleted ✅ (verified complete)
 - **Next Priority**: Remove askama dependency (0.3a)
 - **After askama**: Remove shell.rs module (0.3c)
 - **Build Status**: TBD
