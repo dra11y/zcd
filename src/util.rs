@@ -163,7 +163,7 @@ pub fn write(path: impl AsRef<Path>, contents: impl AsRef<[u8]>) -> Result<()> {
         _ = tmp_file.set_len(contents.len() as u64);
         tmp_file
             .write_all(contents)
-            .with_context(|| format!("could not write to file: {}", tmp_path.display()))?;
+            .with_context(|| format!("could not write to file: {tmp_path}", tmp_path = tmp_path.display()))?;
 
         // Set the owner of the tmpfile (UNIX only).
         #[cfg(unix)]
@@ -183,7 +183,7 @@ pub fn write(path: impl AsRef<Path>, contents: impl AsRef<[u8]>) -> Result<()> {
         // catch these errors, we manually call `File::sync_all()` first.
         tmp_file
             .sync_all()
-            .with_context(|| format!("could not sync writes to file: {}", tmp_path.display()))?;
+            .with_context(|| format!("could not sync writes to file: {tmp_path}", tmp_path = tmp_path.display()))?;
         mem::drop(tmp_file);
         rename(&tmp_path, path)
     })();
@@ -217,7 +217,7 @@ fn tmpfile(dir: impl AsRef<Path>) -> Result<(File, PathBuf)> {
             Ok(file) => break Ok((file, path)),
             Err(e) if e.kind() == io::ErrorKind::AlreadyExists && attempts < MAX_ATTEMPTS => {}
             Err(e) => {
-                break Err(e).with_context(|| format!("could not create file: {}", path.display()));
+                break Err(e).with_context(|| format!("could not create file: {path}", path = path.display()));
             }
         }
     }
@@ -247,7 +247,7 @@ fn rename(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
 
 pub fn canonicalize(path: impl AsRef<Path>) -> Result<PathBuf> {
     dunce::canonicalize(&path)
-        .with_context(|| format!("could not resolve path: {}", path.as_ref().display()))
+        .with_context(|| format!("could not resolve path: {path}", path = path.as_ref().display()))
 }
 
 pub fn current_dir() -> Result<PathBuf> {
@@ -265,7 +265,7 @@ pub fn current_time() -> Result<Epoch> {
 
 pub fn path_to_str(path: &impl AsRef<Path>) -> Result<&str> {
     let path = path.as_ref();
-    path.to_str().with_context(|| format!("invalid unicode in path: {}", path.display()))
+    path.to_str().with_context(|| format!("invalid unicode in path: {path}", path = path.display()))
 }
 
 /// Returns the absolute version of a path. Like
@@ -343,7 +343,7 @@ pub fn resolve_path(path: impl AsRef<Path>) -> Result<PathBuf> {
 
                 let current_dir = env::current_dir()?;
                 let drive_letter = get_drive_letter(&current_dir).with_context(|| {
-                    format!("could not get drive letter: {}", current_dir.display())
+                    format!("could not get drive letter: {current_dir}", current_dir = current_dir.display())
                 })?;
                 base_path = get_drive_path(drive_letter);
                 stack.extend(base_path.components());

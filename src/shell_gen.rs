@@ -4,6 +4,7 @@
 //! Generates minimal shell functions for zcd integration.
 
 use std::fmt;
+use crate::config;
 
 /// Supported shell types for initialization
 #[derive(Debug, Clone, Copy)]
@@ -11,7 +12,7 @@ pub enum Shell {
     Bash,
     Zsh,
     Fish,
-    PowerShell,
+    Power,
 }
 
 impl fmt::Display for Shell {
@@ -20,13 +21,14 @@ impl fmt::Display for Shell {
             Shell::Bash => write!(f, "bash"),
             Shell::Zsh => write!(f, "zsh"),
             Shell::Fish => write!(f, "fish"),
-            Shell::PowerShell => write!(f, "powershell"),
+            Shell::Power => write!(f, "powershell"),
         }
     }
 }
 
 /// Generate bash initialization script
 pub fn generate_bash_init(cmd: &str) -> String {
+    let exe = config::executable();
     format!(
         r#"# zcd bash initialization
 z() {{
@@ -36,23 +38,23 @@ z() {{
         cd "$1"
     else
         local result
-        result="$(${{_ZCD_EXECUTABLE:-zcd}} query --exclude "$(pwd)" -- "$@")"
+        result="$({exe} query --exclude "$(pwd)" -- "$@")"
         [[ -n "$result" ]] && cd "$result"
     fi
 }}
 
 _z_complete() {{
     local candidates
-    candidates="$(${{_ZCD_EXECUTABLE:-zcd}} complete "${{COMP_WORDS[COMP_CWORD]}}" 2>/dev/null)"
+    candidates="$({exe} complete "${{COMP_WORDS[COMP_CWORD]}}" 2>/dev/null)"
     COMPREPLY=($(compgen -W "$candidates" -- "${{COMP_WORDS[COMP_CWORD]}}"))
 }}
-complete -F _z_complete {cmd}"#,
-        cmd = cmd
+complete -F _z_complete {cmd}"#
     )
 }
 
 /// Generate zsh initialization script
 pub fn generate_zsh_init(cmd: &str) -> String {
+    let exe = config::executable();
     format!(
         r#"# zcd zsh initialization
 z() {{
@@ -62,32 +64,33 @@ z() {{
         cd "$1"
     else
         local result
-        result="$(${{_ZCD_EXECUTABLE:-zcd}} query --exclude "$(pwd)" -- "$@")"
+        result="$({exe} query --exclude "$(pwd)" -- "$@")"
         [[ -n "$result" ]] && cd "$result"
     fi
 }}
 
 _z_complete() {{
     local candidates
-    candidates="$(${{_ZCD_EXECUTABLE:-zcd}} complete "${{words[CURRENT]}}" 2>/dev/null)"
+    candidates="$({exe} complete "${{words[CURRENT]}}" 2>/dev/null)"
     compadd -- ${{(f)candidates}}
 }}
-compdef _z_complete {cmd}"#,
-        cmd = cmd
+compdef _z_complete {cmd}"#
     )
 }
 
 /// Generate fish initialization script
 pub fn generate_fish_init(cmd: &str) -> String {
+    let exe = config::executable();
     let _ = cmd; // Unused but kept for API consistency
-    r#"# zcd fish initialization
+    format!(
+        r#"# zcd fish initialization
 function z
     if test (count $argv) -eq 0
         cd ~
     else if test -d "$argv[1]"
         cd "$argv[1]"
     else
-        set result ((set -q _ZCD_EXECUTABLE; and echo $_ZCD_EXECUTABLE; or echo zcd) query --exclude (pwd) -- $argv)
+        set result ({exe} query --exclude (pwd) -- $argv)
         if test -n "$result"
             cd "$result"
         end
@@ -95,44 +98,37 @@ function z
 end
 
 function _z_complete
-    (set -q _ZCD_EXECUTABLE; and echo $_ZCD_EXECUTABLE; or echo zcd) complete (commandline -ct) 2>/dev/null
+    {exe} complete (commandline -ct) 2>/dev/null
 end
-complete -c z -f -a '(_z_complete)'"#.to_string()
+complete -c z -f -a '(_z_complete)'"#
+    )
 }
 
 /// Generate PowerShell initialization script
 pub fn generate_powershell_init(cmd: &str) -> String {
-    let _ = cmd; // Unused but kept for API consistency
-    r#"# zcd PowerShell initialization
-function z {
-    param([string]$Path)
+    let exe = config::executable();
+    format!(
+        "# zcd PowerShell initialization
+function z {{
+    param([Parameter(ValueFromPipeline = $true)] [string[]]$Path)
 
-    $zcdCmd = if ($env:_ZCD_EXECUTABLE) { $env:_ZCD_EXECUTABLE } else { "zcd" }
+    if ($Path.Count -eq 0) {{
+        Set-Location $env:USERPROFILE
+    }} elseif (Test-Path $Path[0] -PathType Container) {{
+        Set-Location $Path[0]
+    }} else {{
+        $result = & {exe} query --exclude $PWD.Path -- @Path
+        if ($result) {{ Set-Location $result }}
+    }}
+}}
 
-    if (-not $Path) {
-        Set-Location ~
-    } elseif (Test-Path $Path -PathType Container) {
-        Set-Location $Path
-    } else {
-        $result = & $zcdCmd query --exclude (Get-Location).Path -- $Path
-        if ($result) {
-            Set-Location $result
-        }
-    }
-}
-
-Register-ArgumentCompleter -CommandName z -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-
-    $zcdCmd = if ($env:_ZCD_EXECUTABLE) { $env:_ZCD_EXECUTABLE } else { "zcd" }
-    $candidates = & $zcdCmd complete $wordToComplete 2>$null
-    if ($candidates) {
-        $candidates | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-    }
-}"#
-    .to_string()
+function _z_complete {{
+    param($wordToComplete, $commandAst, $cursorPosition)
+    $result = & {exe} complete $wordToComplete 2>$null
+    if ($result) {{ $result -split [Environment]::NewLine }}
+}}
+Register-ArgumentCompleter -CommandName {cmd} -ScriptBlock {{ _z_complete @args }}"
+    )
 }
 
 /// Generate shell initialization script for the given shell type
@@ -141,7 +137,7 @@ pub fn generate_init_script(shell: Shell, cmd: &str) -> String {
         Shell::Bash => generate_bash_init(cmd),
         Shell::Zsh => generate_zsh_init(cmd),
         Shell::Fish => generate_fish_init(cmd),
-        Shell::PowerShell => generate_powershell_init(cmd),
+        Shell::Power => generate_powershell_init(cmd),
     }
 }
 
@@ -154,7 +150,7 @@ mod tests {
         assert_eq!(Shell::Bash.to_string(), "bash");
         assert_eq!(Shell::Zsh.to_string(), "zsh");
         assert_eq!(Shell::Fish.to_string(), "fish");
-        assert_eq!(Shell::PowerShell.to_string(), "powershell");
+        assert_eq!(Shell::Power.to_string(), "powershell");
     }
 
     #[test]

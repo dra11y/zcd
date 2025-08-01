@@ -7,30 +7,61 @@ use crate::db::Database;
 
 impl Run for Import {
     fn run(&self) -> Result<()> {
+        eprintln!("zcd: Reading database from {}", self.path.display());
+
         let buffer = fs::read_to_string(&self.path).with_context(|| {
             format!("could not open database for importing: {}", &self.path.display())
         })?;
 
         let mut db = Database::open()?;
+        let initial_count = db.dirs().len();
+
         if !self.merge && !db.dirs().is_empty() {
-            bail!("current database is not empty, specify --merge to continue anyway");
+            bail!(
+                "current database is not empty (has {} entries), specify --merge to continue anyway",
+                initial_count
+            );
         }
 
-        match self.from {
-            ImportFrom::Autojump => import_autojump(&mut db, &buffer),
-            ImportFrom::Z => import_z(&mut db, &buffer),
-        }
-        .context("import error")?;
+        let import_type = match self.from {
+            ImportFrom::Autojump => {
+                eprintln!("zcd: Importing autojump database...");
+                import_autojump(&mut db, &buffer)?;
+                "autojump"
+            }
+            ImportFrom::Z => {
+                eprintln!("zcd: Importing z-compatible database...");
+                import_z(&mut db, &buffer)?;
+                "z-compatible"
+            }
+        };
 
-        db.save()
+        let final_count = db.dirs().len();
+        let imported_count = final_count - initial_count;
+
+        match db.save() {
+            Ok(()) => {
+                eprintln!(
+                    "zcd: Successfully imported {imported_count} entries from {import_type} database"
+                );
+                eprintln!("zcd: Total entries in database: {final_count}");
+            }
+            Err(e) => {
+                eprintln!("zcd: Error saving imported data: {e}");
+                return Err(e);
+            }
+        }
+
+        Ok(())
     }
 }
 
 fn import_autojump(db: &mut Database, buffer: &str) -> Result<()> {
-    for line in buffer.lines() {
-        if line.is_empty() {
-            continue;
-        }
+    let lines: Vec<&str> = buffer.lines().filter(|line| !line.is_empty()).collect();
+    eprintln!("zcd: Processing {lines} entries from autojump database", lines = lines.len());
+
+    let mut imported = 0;
+    for line in lines {
         let (rank, path) =
             line.split_once('\t').with_context(|| format!("invalid entry: {line}"))?;
 
@@ -41,19 +72,22 @@ fn import_autojump(db: &mut Database, buffer: &str) -> Result<()> {
         rank = sigmoid(rank);
 
         db.add_unchecked(path, rank, 0);
+        imported += 1;
     }
 
     if db.dirty() {
         db.dedup();
+        eprintln!("zcd: Processed {imported} autojump entries, deduplicated database");
     }
     Ok(())
 }
 
 fn import_z(db: &mut Database, buffer: &str) -> Result<()> {
-    for line in buffer.lines() {
-        if line.is_empty() {
-            continue;
-        }
+    let lines: Vec<&str> = buffer.lines().filter(|line| !line.is_empty()).collect();
+    eprintln!("zcd: Processing {lines} entries from z-compatible database", lines = lines.len());
+
+    let mut imported = 0;
+    for line in lines {
         let mut split = line.rsplitn(3, '|');
 
         let last_accessed = split.next().with_context(|| format!("invalid entry: {line}"))?;
@@ -66,10 +100,12 @@ fn import_z(db: &mut Database, buffer: &str) -> Result<()> {
         let path = split.next().with_context(|| format!("invalid entry: {line}"))?;
 
         db.add_unchecked(path, rank, last_accessed);
+        imported += 1;
     }
 
     if db.dirty() {
         db.dedup();
+        eprintln!("zcd: Processed {imported} z-compatible entries, deduplicated database");
     }
     Ok(())
 }

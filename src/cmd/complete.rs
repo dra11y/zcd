@@ -12,7 +12,7 @@ impl Run for Complete {
         let paths = complete_paths(&self.partial, self.limit, self.current_dir.as_deref())?;
 
         for path in paths {
-            println!("{}", path);
+            println!("{path}");
         }
 
         Ok(())

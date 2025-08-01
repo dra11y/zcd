@@ -38,16 +38,28 @@ impl Database {
         match fs::read(&path) {
             Ok(bytes) => Self::try_new(path, bytes, |bytes| Self::deserialize(bytes), false),
             Err(e) if e.kind() == io::ErrorKind::NotFound => {
+                eprintln!(
+                    "zcd: No existing database found, creating new database at {path}",
+                    path = path.display()
+                );
+
                 // Create data directory, but don't create any file yet. The file will be
                 // created later by [`Database::save`] if any data is modified.
                 fs::create_dir_all(data_dir).with_context(|| {
-                    format!("unable to create data directory: {}", data_dir.display())
+                    format!(
+                        "unable to create data directory: {data_dir}",
+                        data_dir = data_dir.display()
+                    )
                 })?;
-                Ok(Self::new(path, Vec::new(), |_| Vec::new(), false))
+
+                // Try to migrate from existing zoxide database if this is first run
+                let mut db = Self::new(path, Vec::new(), |_| Vec::new(), false);
+                Self::try_migrate_from_zoxide(&mut db)?;
+                Ok(db)
             }
-            Err(e) => {
-                Err(e).with_context(|| format!("could not read from database: {}", path.display()))
-            }
+            Err(e) => Err(e).with_context(|| {
+                format!("could not read from database: {path}", path = path.display())
+            }),
         }
     }
 
@@ -185,6 +197,100 @@ impl Database {
 
     pub fn dirs(&self) -> &[Dir] {
         self.borrow_dirs()
+    }
+
+    /// Attempts to migrate data from an existing zoxide database on first run
+    fn try_migrate_from_zoxide(db: &mut Self) -> Result<()> {
+        // Try to find original zoxide database using original _ZO_DATA_DIR
+        let zoxide_data_dir = match std::env::var_os("_ZO_DATA_DIR") {
+            Some(path) => {
+                eprintln!(
+                    "zcd: Looking for zoxide database using _ZO_DATA_DIR: {}",
+                    path.to_string_lossy()
+                );
+                PathBuf::from(path)
+            }
+            None => {
+                let data_dir = dirs::data_local_dir()
+                    .context("could not find data directory for zoxide migration")?
+                    .join("zoxide");
+                eprintln!(
+                    "zcd: Looking for zoxide database at default location: {}",
+                    data_dir.display()
+                );
+                data_dir
+            }
+        };
+
+        let zoxide_db_path = zoxide_data_dir.join("db.zo");
+
+        // Only attempt migration if zoxide database exists
+        if !zoxide_db_path.exists() {
+            eprintln!(
+                "zcd: No existing zoxide database found at {path}",
+                path = zoxide_db_path.display()
+            );
+            return Ok(());
+        }
+
+        eprintln!(
+            "zcd: Found existing zoxide database, attempting migration from {path}",
+            path = zoxide_db_path.display()
+        );
+
+        // Read and deserialize zoxide database
+        match fs::read(&zoxide_db_path) {
+            Ok(bytes) => {
+                match Self::deserialize(&bytes) {
+                    Ok(dirs) => {
+                        let entry_count = dirs.len();
+                        eprintln!(
+                            "zcd: Successfully read {entry_count} entries from zoxide database"
+                        );
+
+                        for dir in dirs {
+                            db.add_unchecked(dir.path.as_ref(), dir.rank, dir.last_accessed);
+                        }
+
+                        if db.dirty() {
+                            db.dedup();
+                            // Save the migrated database immediately
+                            match db.save() {
+                                Ok(()) => {
+                                    eprintln!(
+                                        "zcd: Successfully migrated {entry_count} entries from zoxide database"
+                                    );
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "zcd: Warning - migrated data but failed to save: {e}"
+                                    );
+                                }
+                            }
+                        } else {
+                            eprintln!("zcd: No entries to migrate from zoxide database");
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "zcd: Warning - found zoxide database but could not parse it: {e}"
+                        );
+                        eprintln!(
+                            "zcd: This may be due to version incompatibility - continuing without migration"
+                        );
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!(
+                    "zcd: Warning - could not read zoxide database file {path}: {e}",
+                    path = zoxide_db_path.display()
+                );
+                eprintln!("zcd: Continuing without migration");
+            }
+        }
+
+        Ok(())
     }
 
     fn serialize(dirs: &[Dir<'_>]) -> Result<Vec<u8>> {

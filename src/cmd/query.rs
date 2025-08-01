@@ -72,6 +72,11 @@ impl Query {
             dir = stream.next().context("you are already in the only match")?;
         }
 
+        // Print matched directory if _ZCD_ECHO is enabled
+        if config::echo() {
+            eprintln!("zcd: {}", dir.path);
+        }
+
         let dir = if self.score { dir.display().with_score(now) } else { dir.display() };
         writeln!(handle, "{dir}").pipe_exit("stdout")
     }
