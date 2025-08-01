@@ -6,7 +6,7 @@
 use std::fmt;
 
 /// Supported shell types for initialization
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Shell {
     Bash,
     Zsh,

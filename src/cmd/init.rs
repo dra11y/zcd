@@ -6,22 +6,44 @@ use crate::cmd::{Init, InitShell, Run};
 use crate::error::BrokenPipeHandler;
 use crate::shell_gen::{self, Shell};
 
+impl TryFrom<InitShell> for Shell {
+    type Error = &'static str;
+
+    fn try_from(init_shell: InitShell) -> std::result::Result<Self, Self::Error> {
+        match init_shell {
+            InitShell::Bash => Ok(Shell::Bash),
+            InitShell::Zsh => Ok(Shell::Zsh),
+            InitShell::Fish => Ok(Shell::Fish),
+            InitShell::Powershell => Ok(Shell::Power),
+            // Tier 3 shells not supported in our Shell enum
+            InitShell::Elvish => Err("elvish not supported"),
+            InitShell::Nushell => Err("nushell not supported"),
+            InitShell::Posix => Err("posix not supported"),
+            InitShell::Tcsh => Err("tcsh not supported"),
+            InitShell::Xonsh => Err("xonsh not supported"),
+        }
+    }
+}
+
 impl Run for Init {
     fn run(&self) -> Result<()> {
         let cmd = if self.no_cmd { None } else { Some(self.cmd.as_str()) };
         let cmd_str = cmd.unwrap_or("z");
 
-        let source = match self.shell {
-            InitShell::Bash => shell_gen::generate_init_script(Shell::Bash, cmd_str),
-            InitShell::Fish => shell_gen::generate_init_script(Shell::Fish, cmd_str),
-            InitShell::Zsh => shell_gen::generate_init_script(Shell::Zsh, cmd_str),
-            InitShell::Powershell => shell_gen::generate_init_script(Shell::Power, cmd_str),
-            // Tier 3 shells - comment out per ROADMAP task 0.2a
-            InitShell::Elvish => generate_placeholder("elvish", cmd),
-            InitShell::Nushell => generate_placeholder("nushell", cmd),
-            InitShell::Posix => generate_placeholder("posix", cmd),
-            InitShell::Tcsh => generate_placeholder("tcsh", cmd),
-            InitShell::Xonsh => generate_placeholder("xonsh", cmd),
+        let source = match Shell::try_from(self.shell) {
+            Ok(shell) => shell_gen::generate_init_script(shell, cmd_str),
+            Err(_) => {
+                // Tier 3 shell - generate placeholder
+                let shell_name = match self.shell {
+                    InitShell::Elvish => "elvish",
+                    InitShell::Nushell => "nushell",
+                    InitShell::Posix => "posix",
+                    InitShell::Tcsh => "tcsh",
+                    InitShell::Xonsh => "xonsh",
+                    _ => unreachable!(), // All supported shells handled above
+                };
+                generate_placeholder(shell_name, cmd)
+            }
         };
 
         writeln!(io::stdout(), "{source}").pipe_exit("stdout")

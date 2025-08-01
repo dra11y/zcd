@@ -166,7 +166,7 @@ pub enum InitHook {
     Pwd,
 }
 
-#[derive(ValueEnum, Clone, Debug)]
+#[derive(ValueEnum, Clone, Copy, Debug)]
 pub enum InitShell {
     Bash,
     Elvish,
