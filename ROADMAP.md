@@ -17,7 +17,7 @@ This ensures you maintain control while I handle the technical execution.
 ## Phase 0: Foundation (Immediate) - ATOMIC TASKS
 **STATUS: PARTIALLY COMPLETE**
 
-#### ✅ **COMPLETED** - Verified by state detection:
+#### ✅ **COMPLETED**:
 - [x] 0.1a: Update Cargo.toml package name: `zoxide` → `zcd` ✅ **DONE BY USER**
 - [x] 0.1b: Update help templates in src/cmd/cmd.rs ✅ **DONE BY USER**
 - [x] 0.1c: Change environment variable references `_ZO_` → `_ZCD_` ✅ **DONE BY USER**
@@ -348,14 +348,15 @@ No Docker dependency: Use local temp dirs, std::process
 ### Phase 2: Shell Integration - ATOMIC TASKS
 **Dependencies:** ✅ **SATISFIED** - Phase 1.2 (completion logic) AND 1.3c (init.rs updated) complete
 
-- [ ] 2.1a: Test completion command functionality (prerequisite for shell testing)
-- [ ] 2.1b: Test bash completion with generated functions
-- [ ] 2.1c: Test zsh completion with generated functions
+- [x] 2.1a: Test completion command functionality (prerequisite for shell testing) ✅ **COMPLETED**
+- [ ] 2.1b: Test bash completion with generated functions (IN PROGRESS - issues identified)
+- [ ] 2.1c: Test zsh completion with generated functions (IN PROGRESS - compdef missing)
 - [ ] 2.1d: Test fish completion with generated functions
 - [ ] 2.2a: Create PowerShell proof-of-concept (max 50 lines)
 - [ ] 2.2b: Document PowerShell decision (keep/remove)
 - [ ] 2.3a: Remove zi command references from all shells
 - [ ] 2.3b: Simplify to z-only functionality
+- [x] 2.4a: Implement `_ZCD_EXECUTABLE` environment variable support ✅ **COMPLETED**
 
 **Testing Strategy:**
 ```
@@ -370,12 +371,13 @@ Step 3: Test live shell completion
 ```
 
 **Validation Criteria:**
-- [ ] `cargo run -- complete /usr` returns actual directories (not TODO)
-- [ ] Tab completion works in bash: `z test<TAB>`
-- [ ] Tab completion works in zsh: `z test<TAB>`
+- [x] `cargo run -- complete /usr` returns actual directories ✅ **COMPLETED**
+- [ ] Tab completion works in bash: `z test<TAB>` (function execution issues)
+- [ ] Tab completion works in zsh: `z test<TAB>` (compdef command missing)
 - [ ] Tab completion works in fish: `z test<TAB>`
 - [ ] PowerShell decision documented with rationale
 - [ ] No zi command exists in generated scripts
+- [x] `_ZCD_EXECUTABLE` environment variable implemented ✅ **COMPLETED**
 
 **Rollback Strategy:** Shell-specific rollback possible
 
@@ -428,46 +430,101 @@ Performance & Compatibility:
 
 **Rollback Strategy:** Feature-specific rollback possible
 
+## Phase 4: Documentation & Distribution
+
+### 4.1 Documentation Updates - ATOMIC TASKS
+**Dependencies:** Core functionality (Phase 1-2) must be stable
+
+- [ ] 4.1a: Update README.md with zcd-specific installation instructions
+- [ ] 4.1b: Document all environment variables in README
+- [ ] 4.1c: Add shell-specific setup examples for bash/zsh/fish
+- [ ] 4.1d: Create troubleshooting section for common completion issues
+- [ ] 4.1e: Update VISION.md with current feature status
+- [ ] 4.1f: Add performance benchmarking results to README
+
+**Environment Variables Documentation:**
+```markdown
+### Environment Variables
+
+- `_ZCD_EXECUTABLE` - Path to zcd binary (default: `zcd` from PATH)
+  - Standard: Uses `zcd` from PATH after installation
+  - Custom: `export _ZCD_EXECUTABLE=/opt/custom/bin/zcd`
+  - Development: `export _ZCD_EXECUTABLE=./target/release/zcd`
+
+- `_ZCD_DATA_DIR` - Database storage location (default: OS data directory)
+- `_ZCD_ECHO` - Print matched directory before navigation (set to `1`)
+- `_ZCD_EXCLUDE_DIRS` - Colon-separated list of directory globs to exclude
+- `_ZCD_FZF_OPTS` - Custom flags for fzf integration
+- `_ZCD_MAXAGE` - Maximum age for database entries before cleanup
+- `_ZCD_RESOLVE_SYMLINKS` - Resolve symlinks when storing paths (set to `1`)
+```
+
+**Shell Setup Examples:**
+```bash
+# Bash/Zsh - Standard installation
+eval "$(zcd init bash)"  # or zsh
+
+# Fish - Standard installation
+eval (zcd init fish)
+
+# Development/Custom path
+export _ZCD_EXECUTABLE=./target/release/zcd
+eval "$(zcd init bash)"
+
+# Troubleshooting tab completion
+# 1. Verify zcd binary in PATH: command -v zcd
+# 2. Test completion directly: zcd complete /ho
+# 3. Check shell functions: declare -f z _z_complete
+```
+
+### 4.2 Distribution & Packaging - ATOMIC TASKS
+**Dependencies:** Documentation complete, testing stable
+
+- [ ] 4.2a: Update Cargo.toml metadata for crates.io publication
+- [ ] 4.2b: Create GitHub release with precompiled binaries
+- [ ] 4.2c: Submit to Homebrew (macOS/Linux package manager)
+- [ ] 4.2d: Create installation script for direct downloads
+- [ ] 4.2e: Update package manager submission documentation
+
+**Validation Criteria:**
+- [ ] README accurately reflects current functionality
+- [ ] All environment variables documented with examples
+- [ ] Shell setup instructions work on fresh systems
+- [ ] Installation methods tested on multiple platforms
+
 ## Quick Start Reconcile Protocol
 
 ### User Instructions
 At the start of any inference cycle, simply say: **"Begin"** and I will:
-1. Run the state detection commands below
-2. Identify the next atomic task to execute
-3. Summarize current progress and next step
-4. Ask for your confirmation before proceeding
-
-### Efficient State Detection Commands (Run These Only For Remaining Tasks)
-```bash
-# Only check what's not already verified as complete
-grep -q askama Cargo.toml 2>/dev/null && echo "askama-present" || echo "askama-removed"
-ls src/shell.rs 2>/dev/null && echo "shell-exists" || echo "shell-missing"
-cargo check --quiet 2>/dev/null && echo "builds-ok" || echo "build-failed"
-```
+1. Identify the next atomic task to execute based on the tasks marked completed
+2. Summarize current progress and next step
+3. Ask for your confirmation before proceeding
 
 ### Current State Analysis
-Based on efficient detection:
+**UPDATED STATUS as of Phase 2.1a completion:**
 - **Package**: zcd ✅ (verified complete)
 - **Templates**: deleted ✅ (verified complete)
-- **Next Priority**: Remove askama dependency (0.3a)
-- **After askama**: Remove shell.rs module (0.3c)
-- **Build Status**: TBD
+- **askama**: removed ✅ (verified complete)
+- **shell.rs**: removed ✅ (verified complete)
+- **Complete command**: implemented ✅ (4ms performance)
+- **Shell generation**: implemented ✅ (~19-25 lines per shell)
+- **_ZCD_EXECUTABLE**: implemented ✅ (configurable binary path)
+- **Current Phase**: 2.1b - Debug shell completion integration
+- **Next Priority**: Fix bash `_z_complete` function execution
 
 ### Efficient State Interpretation Matrix
-| askama | shell.rs | Complete | shell_gen | Next Task |
-|--------|----------|----------|-----------|-----------|
-| present | exists  | missing  | missing   | **0.3a** Remove askama |
-| removed | exists  | missing  | missing   | **0.3c** Remove shell.rs |
-| removed | missing | missing  | missing   | **1.1a** Create complete.rs |
-| removed | missing | exists   | missing   | **1.3a** Create shell_gen.rs |
-| removed | missing | exists   | exists    | **2.1a** Test completions |
+| askama | shell.rs | Complete | shell_gen | _ZCD_EXECUTABLE | Next Task |
+|--------|----------|----------|-----------|-----------------|-----------|
+| removed | missing | exists   | exists    | implemented     | **2.1b** Debug bash completion |
+| removed | missing | exists   | exists    | implemented     | **2.1c** Debug zsh compdef |
+| removed | missing | exists   | exists    | implemented     | **2.1d** Test fish completion |
 
 ### Progress Summary Template
 ```
-Current State: [Package: zoxide/zcd] [Templates: N] [askama: present/removed]
-Next Task: [X.Ya] [Description]
-Dependencies: [Any blocking tasks]
-Validation: [How to verify completion]
+Current State: [Package: zcd] [Phase: 2.1a ✅] [Shell Integration: IN PROGRESS]
+Next Task: [2.1b] [Debug bash completion function execution]
+Dependencies: [Completion command working ✅] [Shell generation working ✅]
+Validation: [Manual tab completion testing in live shells]
 ```
 
 ## Kubernetes Operator Principles Applied

@@ -60,3 +60,7 @@ pub fn maxage() -> Result<Rank> {
 pub fn resolve_symlinks() -> bool {
     env::var_os("_ZCD_RESOLVE_SYMLINKS").is_some_and(|var| var == "1")
 }
+
+pub fn executable() -> String {
+    env::var("_ZCD_EXECUTABLE").unwrap_or_else(|_| "zcd".to_string())
+}

@@ -25,6 +25,7 @@ https://github.com/dra11y/zcd
 {tab}<bold>_ZCD_DATA_DIR</bold>        {tab}Path for zcd data files
 {tab}<bold>_ZCD_ECHO</bold>            {tab}Print the matched directory before navigating to it when set to 1
 {tab}<bold>_ZCD_EXCLUDE_DIRS</bold>    {tab}List of directory globs to be excluded
+{tab}<bold>_ZCD_EXECUTABLE</bold>      {tab}Path to the zcd executable (default: zcd)
 {tab}<bold>_ZCD_FZF_OPTS</bold>        {tab}Custom flags to pass to fzf
 {tab}<bold>_ZCD_MAXAGE</bold>          {tab}Maximum total age after which entries start getting deleted
 {tab}<bold>_ZCD_RESOLVE_SYMLINKS</bold>{tab}Resolve symlinks when storing paths").into_resettable()

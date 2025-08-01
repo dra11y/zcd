@@ -36,17 +36,17 @@ z() {{
         cd "$1"
     else
         local result
-        result="$({cmd} query --exclude "$(pwd)" -- "$@")"
+        result="$(${{_ZCD_EXECUTABLE:-zcd}} query --exclude "$(pwd)" -- "$@")"
         [[ -n "$result" ]] && cd "$result"
     fi
 }}
 
 _z_complete() {{
     local candidates
-    candidates="$({cmd} complete "${{COMP_WORDS[COMP_CWORD]}}" 2>/dev/null)"
+    candidates="$(${{_ZCD_EXECUTABLE:-zcd}} complete "${{COMP_WORDS[COMP_CWORD]}}" 2>/dev/null)"
     COMPREPLY=($(compgen -W "$candidates" -- "${{COMP_WORDS[COMP_CWORD]}}"))
 }}
-complete -F _z_complete z"#,
+complete -F _z_complete {cmd}"#,
         cmd = cmd
     )
 }
@@ -62,32 +62,32 @@ z() {{
         cd "$1"
     else
         local result
-        result="$({cmd} query --exclude "$(pwd)" -- "$@")"
+        result="$(${{_ZCD_EXECUTABLE:-zcd}} query --exclude "$(pwd)" -- "$@")"
         [[ -n "$result" ]] && cd "$result"
     fi
 }}
 
 _z_complete() {{
     local candidates
-    candidates="$({cmd} complete "${{words[CURRENT]}}" 2>/dev/null)"
+    candidates="$(${{_ZCD_EXECUTABLE:-zcd}} complete "${{words[CURRENT]}}" 2>/dev/null)"
     compadd -- ${{(f)candidates}}
 }}
-compdef _z_complete z"#,
+compdef _z_complete {cmd}"#,
         cmd = cmd
     )
 }
 
 /// Generate fish initialization script
 pub fn generate_fish_init(cmd: &str) -> String {
-    format!(
-        r#"# zcd fish initialization
+    let _ = cmd; // Unused but kept for API consistency
+    r#"# zcd fish initialization
 function z
     if test (count $argv) -eq 0
         cd ~
     else if test -d "$argv[1]"
         cd "$argv[1]"
     else
-        set result ({cmd} query --exclude (pwd) -- $argv)
+        set result ((set -q _ZCD_EXECUTABLE; and echo $_ZCD_EXECUTABLE; or echo zcd) query --exclude (pwd) -- $argv)
         if test -n "$result"
             cd "$result"
         end
@@ -95,44 +95,44 @@ function z
 end
 
 function _z_complete
-    {cmd} complete (commandline -ct) 2>/dev/null
+    (set -q _ZCD_EXECUTABLE; and echo $_ZCD_EXECUTABLE; or echo zcd) complete (commandline -ct) 2>/dev/null
 end
-complete -c z -f -a '(_z_complete)'"#,
-        cmd = cmd
-    )
+complete -c z -f -a '(_z_complete)'"#.to_string()
 }
 
 /// Generate PowerShell initialization script
 pub fn generate_powershell_init(cmd: &str) -> String {
-    format!(
-        r#"# zcd PowerShell initialization
-function z {{
+    let _ = cmd; // Unused but kept for API consistency
+    r#"# zcd PowerShell initialization
+function z {
     param([string]$Path)
 
-    if (-not $Path) {{
-        Set-Location ~
-    }} elseif (Test-Path $Path -PathType Container) {{
-        Set-Location $Path
-    }} else {{
-        $result = & {cmd} query --exclude (Get-Location).Path -- $Path
-        if ($result) {{
-            Set-Location $result
-        }}
-    }}
-}}
+    $zcdCmd = if ($env:_ZCD_EXECUTABLE) { $env:_ZCD_EXECUTABLE } else { "zcd" }
 
-Register-ArgumentCompleter -CommandName z -ScriptBlock {{
+    if (-not $Path) {
+        Set-Location ~
+    } elseif (Test-Path $Path -PathType Container) {
+        Set-Location $Path
+    } else {
+        $result = & $zcdCmd query --exclude (Get-Location).Path -- $Path
+        if ($result) {
+            Set-Location $result
+        }
+    }
+}
+
+Register-ArgumentCompleter -CommandName z -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
 
-    $candidates = & {cmd} complete $wordToComplete 2>$null
-    if ($candidates) {{
-        $candidates | ForEach-Object {{
+    $zcdCmd = if ($env:_ZCD_EXECUTABLE) { $env:_ZCD_EXECUTABLE } else { "zcd" }
+    $candidates = & $zcdCmd complete $wordToComplete 2>$null
+    if ($candidates) {
+        $candidates | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }}
-    }}
-}}"#,
-        cmd = cmd
-    )
+        }
+    }
+}"#
+    .to_string()
 }
 
 /// Generate shell initialization script for the given shell type
@@ -159,12 +159,12 @@ mod tests {
 
     #[test]
     fn test_bash_generation() {
-        let script = generate_bash_init("zcd");
+        let script = generate_bash_init("z");
         assert!(script.contains("z() {"));
         assert!(script.contains("_z_complete() {"));
         assert!(script.contains("complete -F _z_complete z"));
-        assert!(script.contains("zcd query"));
-        assert!(script.contains("zcd complete"));
+        assert!(script.contains("${_ZCD_EXECUTABLE:-zcd} query"));
+        assert!(script.contains("${_ZCD_EXECUTABLE:-zcd} complete"));
     }
 
     #[test]
