@@ -18,8 +18,8 @@ After each atomic task completion, I will:
 - [x] 0.3b: Delete templates/ directory entirely ✅ **COMPLETED** (verified: 0 files)
 
 #### 🔄 **REMAINING TASKS**:
-- [ ] 0.3a: Remove askama from Cargo.toml dependencies
-- [ ] 0.3c: Remove shell.rs module completely
+- [x] 0.3a: Remove askama from Cargo.toml dependencies ✅ COMPLETED
+- [x] 0.3c: Remove shell.rs module completely ✅ COMPLETED
 - [ ] 0.2a: Comment out Tier 3 shells in InitShell enum
 - [ ] 0.2b: Remove Tier 3 shell templates from templates/ directory (SKIP - templates deleted)
 
@@ -329,9 +329,9 @@ complete -F _z_complete z
 - [ ] 0.1d: Update database path constants
 - [ ] 0.2a: Comment out Tier 3 shells in InitShell enum
 - [ ] 0.2b: Remove Tier 3 shell templates from templates/ directory
-- [ ] 0.3a: Remove askama from Cargo.toml dependencies
-- [ ] 0.3b: Delete templates/ directory entirely
-- [ ] 0.3c: Remove shell.rs module completely
+  - [x] 0.3a: Remove askama dependency ✅ COMPLETED
+  - [x] 0.3b: Delete templates directory ✅ COMPLETED
+  - [x] 0.3c: Delete shell.rs module ✅ COMPLETED
 
 **Validation Criteria:**
 - [ ] `cargo build` succeeds without askama
@@ -347,13 +347,13 @@ complete -F _z_complete z
 - [x] 1.1a: Create src/cmd/complete.rs with Complete struct ✅ **COMPLETED**
 - [x] 1.1b: Add Complete variant to Cmd enum in cmd.rs ✅ **COMPLETED**
 - [x] 1.1c: Add Complete to mod.rs exports ✅ **COMPLETED**
-- [ ] 1.2a: Implement basic complete_paths() function (database only)
-- [ ] 1.2b: Add current_dir_subdirs() filesystem fallback
-- [ ] 1.2c: Implement merge_results() for db + filesystem
+- [x] 1.2a: Implement basic complete_paths() function (database only) ✅ **COMPLETED**
+- [x] 1.2b: Add current_dir_subdirs() filesystem fallback ✅ **COMPLETED**
+- [x] 1.2c: Implement merge_results() for db + filesystem ✅ **COMPLETED**
 - [x] 1.3a: Create src/shell_gen.rs module ✅ **COMPLETED**
 - [x] 1.3b: Implement generate_bash_init() function ✅ **COMPLETED**
 - [x] 1.3c: Update init.rs to use shell_gen instead of templates ✅ **COMPLETED**
-- [ ] 1.4a: Add unit tests for completion and shell generation logic
+- [x] 1.4a: Add unit tests for completion and shell generation logic ✅ **COMPLETED**
 - [ ] 1.4b: Add integration tests for shell script functionality
 
 **Testing Strategy (Added per user requirement):**
@@ -380,13 +380,13 @@ No Docker dependency: Use local temp dirs, std::process
 - [x] `zcd init bash` generates working shell functions ✅ **COMPLETED**
 - [x] Generated functions are <25 lines total ✅ **~19-25 lines**
 - [x] `cargo run -- complete /tmp` returns actual directory completions ✅ **COMPLETED**
-- [ ] Unit tests pass for all completion logic
+- [x] Unit tests pass for all completion logic ✅ **4/4 tests passing**
 - [ ] Integration tests pass for all shell generation
 
 **Rollback Strategy:** Individual function rollback possible
 
 ### Phase 2: Shell Integration - ATOMIC TASKS
-**Dependencies:** Phase 1.2 (completion logic) AND 1.3c (init.rs updated) must be complete
+**Dependencies:** ✅ **SATISFIED** - Phase 1.2 (completion logic) AND 1.3c (init.rs updated) complete
 
 - [ ] 2.1a: Test completion command functionality (prerequisite for shell testing)
 - [ ] 2.1b: Test bash completion with generated functions
