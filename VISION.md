@@ -33,13 +33,8 @@ You install `zoxide` expecting `z mydir<TAB>` to complete to your frequently use
 - **`z()` function**: Thin shell wrapper (3 lines vs zoxide's ~150)
 - **`alias cd=z`**: Seamless replacement
 
-**Git-Style Tab Completion**:
-```bash
-z mydir<TAB>        # → z mydirectory      (single match)
-z my<TAB>           # → Shows: mydirectory, myproject3, my_temp/
-z my<TAB><TAB>      # → Cycles through matches
-```
-
+**Tab Completion**:
+See ROADMAP.md
 
 ### zoxide vs `zcd`
 
