@@ -345,7 +345,7 @@ complete -F _z_complete z
 **Dependencies:** Phase 0 must be complete
 
 - [x] 1.1a: Create src/cmd/complete.rs with Complete struct ✅ **COMPLETED**
-- [x] 1.1b: Add Complete variant to Cmd enum in cmd.rs ✅ **COMPLETED** 
+- [x] 1.1b: Add Complete variant to Cmd enum in cmd.rs ✅ **COMPLETED**
 - [x] 1.1c: Add Complete to mod.rs exports ✅ **COMPLETED**
 - [ ] 1.2a: Implement basic complete_paths() function (database only)
 - [ ] 1.2b: Add current_dir_subdirs() filesystem fallback
@@ -368,7 +368,7 @@ complete -F _z_complete z
 **Dependencies:** Phase 1.2 (completion logic) AND 1.3c (init.rs updated) must be complete
 
 - [ ] 2.1a: Test completion command functionality (prerequisite for shell testing)
-- [ ] 2.1b: Test bash completion with generated functions  
+- [ ] 2.1b: Test bash completion with generated functions
 - [ ] 2.1c: Test zsh completion with generated functions
 - [ ] 2.1d: Test fish completion with generated functions
 - [ ] 2.2a: Create PowerShell proof-of-concept (max 50 lines)
@@ -380,10 +380,10 @@ complete -F _z_complete z
 ```
 Step 1: Test binary completion directly
   cargo run -- complete /usr → should return directories like /usr/bin, /usr/lib
-  
-Step 2: Test generated shell functions  
+
+Step 2: Test generated shell functions
   eval "$(cargo run -- init bash)" → should define z() and _z_complete()
-  
+
 Step 3: Test live shell completion
   z /u<TAB> → should complete to /usr or show /usr/bin, /usr/lib, etc.
 ```
