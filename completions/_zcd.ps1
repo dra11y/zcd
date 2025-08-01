@@ -26,6 +26,7 @@ Register-ArgumentCompleter -Native -CommandName 'zcd' -ScriptBlock {
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new directory or increment its rank')
+            [CompletionResult]::new('complete', 'complete', [CompletionResultType]::ParameterValue, 'Generate completion candidates for shell tab completion')
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit the database')
             [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import entries from another application')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Generate shell configuration')
@@ -36,6 +37,15 @@ Register-ArgumentCompleter -Native -CommandName 'zcd' -ScriptBlock {
         'zcd;add' {
             [CompletionResult]::new('-s', '-s', [CompletionResultType]::ParameterName, 'The rank to increment the entry if it exists or initialize it with if it doesn''t')
             [CompletionResult]::new('--score', '--score', [CompletionResultType]::ParameterName, 'The rank to increment the entry if it exists or initialize it with if it doesn''t')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
+            break
+        }
+        'zcd;complete' {
+            [CompletionResult]::new('--limit', '--limit', [CompletionResultType]::ParameterName, 'Maximum number of completion candidates')
+            [CompletionResult]::new('--current-dir', '--current-dir', [CompletionResultType]::ParameterName, 'Current working directory for filesystem completion')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')

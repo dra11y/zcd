@@ -39,6 +39,17 @@ _arguments "${_arguments_options[@]}" : \
 '*::paths:_files -/' \
 && ret=0
 ;;
+(complete)
+_arguments "${_arguments_options[@]}" : \
+'--limit=[Maximum number of completion candidates]:LIMIT:_default' \
+'--current-dir=[Current working directory for filesystem completion]:CURRENT_DIR:_files' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':partial -- Partial path to complete:_default' \
+&& ret=0
+;;
 (edit)
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
@@ -153,6 +164,7 @@ esac
 _zcd_commands() {
     local commands; commands=(
 'add:Add a new directory or increment its rank' \
+'complete:Generate completion candidates for shell tab completion' \
 'edit:Edit the database' \
 'import:Import entries from another application' \
 'init:Generate shell configuration' \
@@ -165,6 +177,11 @@ _zcd_commands() {
 _zcd__add_commands() {
     local commands; commands=()
     _describe -t commands 'zcd add commands' commands "$@"
+}
+(( $+functions[_zcd__complete_commands] )) ||
+_zcd__complete_commands() {
+    local commands; commands=()
+    _describe -t commands 'zcd complete commands' commands "$@"
 }
 (( $+functions[_zcd__edit_commands] )) ||
 _zcd__edit_commands() {

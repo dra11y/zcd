@@ -42,11 +42,31 @@ https://github.com/dra11y/zcd
 )]
 pub enum Cmd {
     Add(Add),
+    Complete(Complete),
     Edit(Edit),
     Import(Import),
     Init(Init),
     Query(Query),
     Remove(Remove),
+}
+
+/// Generate completion candidates for shell tab completion
+#[derive(Debug, Parser)]
+#[clap(
+    author,
+    help_template = HelpTemplate,
+)]
+pub struct Complete {
+    /// Partial path to complete
+    pub partial: String,
+
+    /// Maximum number of completion candidates
+    #[clap(long, default_value = "20")]
+    pub limit: usize,
+
+    /// Current working directory for filesystem completion
+    #[clap(long)]
+    pub current_dir: Option<PathBuf>,
 }
 
 /// Add a new directory or increment its rank

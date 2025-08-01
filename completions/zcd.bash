@@ -19,6 +19,9 @@ _zcd() {
             zcd,add)
                 cmd="zcd__add"
                 ;;
+            zcd,complete)
+                cmd="zcd__complete"
+                ;;
             zcd,edit)
                 cmd="zcd__edit"
                 ;;
@@ -53,7 +56,7 @@ _zcd() {
 
     case "${cmd}" in
         zcd)
-            opts="-h -V --help --version add edit import init query remove"
+            opts="-h -V --help --version add complete edit import init query remove"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -78,6 +81,28 @@ _zcd() {
                     return 0
                     ;;
                 -s)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        zcd__complete)
+            opts="-h -V --limit --current-dir --help --version <PARTIAL>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --limit)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --current-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

@@ -27,6 +27,7 @@ end
 complete -c zcd -n "__fish_zcd_needs_command" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_needs_command" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "add" -d 'Add a new directory or increment its rank'
+complete -c zcd -n "__fish_zcd_needs_command" -f -a "complete" -d 'Generate completion candidates for shell tab completion'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "edit" -d 'Edit the database'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "import" -d 'Import entries from another application'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "init" -d 'Generate shell configuration'
@@ -35,6 +36,10 @@ complete -c zcd -n "__fish_zcd_needs_command" -f -a "remove" -d 'Remove a direct
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s s -l score -d 'The rank to increment the entry if it exists or initialize it with if it doesn\'t' -r
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s V -l version -d 'Print version'
+complete -c zcd -n "__fish_zcd_using_subcommand complete" -l limit -d 'Maximum number of completion candidates' -r
+complete -c zcd -n "__fish_zcd_using_subcommand complete" -l current-dir -d 'Current working directory for filesystem completion' -r -F
+complete -c zcd -n "__fish_zcd_using_subcommand complete" -s h -l help -d 'Print help'
+complete -c zcd -n "__fish_zcd_using_subcommand complete" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and not __fish_seen_subcommand_from decrement delete increment reload" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and not __fish_seen_subcommand_from decrement delete increment reload" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and not __fish_seen_subcommand_from decrement delete increment reload" -f -a "decrement"
