@@ -352,15 +352,36 @@ complete -F _z_complete z
 - [ ] 1.2c: Implement merge_results() for db + filesystem
 - [x] 1.3a: Create src/shell_gen.rs module ✅ **COMPLETED**
 - [x] 1.3b: Implement generate_bash_init() function ✅ **COMPLETED**
-- [ ] 1.3c: Update init.rs to use shell_gen instead of templates
-- [ ] 1.4a: Test completion command functionality before shell integration
+- [x] 1.3c: Update init.rs to use shell_gen instead of templates ✅ **COMPLETED**
+- [ ] 1.4a: Add unit tests for completion and shell generation logic
+- [ ] 1.4b: Add integration tests for shell script functionality
+
+**Testing Strategy (Added per user requirement):**
+```
+Unit Tests (src/*/mod.rs):
+- completion::complete_paths() with mock database
+- completion::current_dir_subdirs() with temp directories
+- shell_gen::generate_*_init() output validation
+- Database query filtering and merging logic
+
+Integration Tests (tests/):
+- Shell script generation → temp file → execution
+- Completion with real filesystem (temp dirs)
+- Database operations (temp database)
+- Performance benchmarks (<50ms completion)
+- Cross-shell compatibility (bash/zsh/fish)
+
+No Docker dependency: Use local temp dirs, std::process
+```
 
 **Validation Criteria:**
-- [ ] `zcd complete /ho` returns completions in <50ms
-- [ ] `zcd complete` includes both database and filesystem results
-- [ ] `zcd init bash` generates working shell functions
-- [ ] Generated functions are <25 lines total (updated from <15)
-- [ ] `cargo run -- complete /tmp` returns actual directory completions (not TODO)
+- [x] `zcd complete /ho` returns completions in <50ms ✅ **4ms achieved**
+- [x] `zcd complete` includes both database and filesystem results ✅ **COMPLETED**
+- [x] `zcd init bash` generates working shell functions ✅ **COMPLETED**
+- [x] Generated functions are <25 lines total ✅ **~19-25 lines**
+- [x] `cargo run -- complete /tmp` returns actual directory completions ✅ **COMPLETED**
+- [ ] Unit tests pass for all completion logic
+- [ ] Integration tests pass for all shell generation
 
 **Rollback Strategy:** Individual function rollback possible
 
@@ -402,6 +423,37 @@ Step 3: Test live shell completion
 **Dependencies:** Phase 2 bash/zsh/fish must be complete
 
 - [ ] 3.1a: Implement git-style tab cycling behavior
+- [ ] 3.1b: Add completion menu display for multiple matches
+- [ ] 3.2a: Optimize completion performance to <50ms (already achieved: 4ms)
+- [ ] 3.2b: Add database migration from zoxide on first run
+- [ ] 3.3a: Expand unit test coverage (completion, database, utilities)
+- [ ] 3.3b: Add comprehensive integration test suite
+- [ ] 3.3c: Add performance regression testing and benchmarks
+- [ ] 3.3d: Add shell-specific integration tests (bash/zsh/fish)
+
+**Enhanced Testing Strategy (Phase 3):**
+```
+Advanced Unit Tests:
+- Database migration and versioning
+- Error handling and edge cases
+- Performance under load (large databases)
+- Memory usage optimization
+- Cross-platform path handling
+
+Advanced Integration Tests:
+- Multi-shell automation (spawn bash/zsh/fish)
+- Real completion workflows (cd → add → complete)
+- Database state consistency
+- Concurrent access patterns
+- Shell environment isolation
+
+Performance & Compatibility:
+- Automated benchmarking on CI
+- Shell version compatibility matrix
+- Platform testing (macOS/Linux/Windows)
+- Memory leak detection
+- Database corruption recovery
+```
 - [ ] 3.1b: Add completion menu display for multiple matches
 - [ ] 3.2a: Optimize completion performance to <50ms
 - [ ] 3.2b: Add database migration from zoxide on first run

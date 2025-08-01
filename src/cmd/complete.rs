@@ -100,3 +100,72 @@ fn current_dir_subdirs(
 
     Ok(results)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_current_dir_subdirs_empty_directory() {
+        let temp_dir = TempDir::new().unwrap();
+        let result = current_dir_subdirs("", Some(temp_dir.path()), 10).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_current_dir_subdirs_with_directories() {
+        let temp_dir = TempDir::new().unwrap();
+        let dir_path = temp_dir.path();
+
+        // Create test directories
+        fs::create_dir(dir_path.join("project1")).unwrap();
+        fs::create_dir(dir_path.join("project2")).unwrap();
+        fs::create_dir(dir_path.join("other")).unwrap();
+
+        // Test empty prefix (should return all)
+        let result = current_dir_subdirs("", Some(dir_path), 10).unwrap();
+        assert_eq!(result.len(), 3);
+
+        // Test prefix matching
+        let result = current_dir_subdirs("proj", Some(dir_path), 10).unwrap();
+        assert_eq!(result.len(), 2);
+        assert!(result.iter().any(|p| p.contains("project1")));
+        assert!(result.iter().any(|p| p.contains("project2")));
+
+        // Test limit
+        let result = current_dir_subdirs("", Some(dir_path), 2).unwrap();
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_current_dir_subdirs_prefix_matching() {
+        let temp_dir = TempDir::new().unwrap();
+        let dir_path = temp_dir.path();
+
+        fs::create_dir(dir_path.join("alpha")).unwrap();
+        fs::create_dir(dir_path.join("beta")).unwrap();
+        fs::create_dir(dir_path.join("alphabet")).unwrap();
+
+        let result = current_dir_subdirs("alph", Some(dir_path), 10).unwrap();
+        assert_eq!(result.len(), 2);
+        assert!(result.iter().any(|p| p.contains("alpha")));
+        assert!(result.iter().any(|p| p.contains("alphabet")));
+        assert!(!result.iter().any(|p| p.contains("beta")));
+    }
+
+    #[test]
+    fn test_current_dir_subdirs_ignores_files() {
+        let temp_dir = TempDir::new().unwrap();
+        let dir_path = temp_dir.path();
+
+        // Create both directories and files
+        fs::create_dir(dir_path.join("directory")).unwrap();
+        fs::write(dir_path.join("file.txt"), "content").unwrap();
+
+        let result = current_dir_subdirs("", Some(dir_path), 10).unwrap();
+        assert_eq!(result.len(), 1);
+        assert!(result[0].contains("directory"));
+    }
+}
