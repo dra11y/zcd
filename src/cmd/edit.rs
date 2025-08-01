@@ -52,20 +52,20 @@ impl Edit {
                 // Interface
                 "--bind=\
 btab:up,\
-ctrl-r:reload(zoxide edit reload),\
-ctrl-d:reload(zoxide edit delete {2..}),\
-ctrl-w:reload(zoxide edit increment {2..}),\
-ctrl-s:reload(zoxide edit decrement {2..}),\
+ctrl-r:reload(zcd edit reload),\
+ctrl-d:reload(zcd edit delete {2..}),\
+ctrl-w:reload(zcd edit increment {2..}),\
+ctrl-s:reload(zcd edit decrement {2..}),\
 ctrl-z:ignore,\
 double-click:ignore,\
 enter:abort,\
-start:reload(zoxide edit reload),\
+start:reload(zcd edit reload),\
 tab:down",
                 "--cycle",
                 "--keep-right",
                 // Layout
                 "--border=sharp",
-                "--border-label=  zoxide-edit  ",
+                "--border-label=  zcd-edit  ",
                 "--header=\
 ctrl-r:reload   \tctrl-d:delete
 ctrl-w:increment\tctrl-s:decrement

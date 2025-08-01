@@ -1,14 +1,14 @@
 [package]
-authors = ["Ajeet D'Souza <98ajeet@gmail.com>"]
+authors = ["Tom Grushka <tom@dra11y.com>", "Ajeet D'Souza <98ajeet@gmail.com>"]
 categories = ["command-line-utilities", "filesystem"]
-description = "A smarter cd command for your terminal"
+description = "A smarter cd command for your terminal, with git-style <TAB> completion that works."
 edition = "2024"
-homepage = "https://github.com/ajeetdsouza/zoxide"
+homepage = "https://github.com/dra11y/zcd"
 keywords = ["cli", "filesystem", "shell", "tool", "utility"]
 license = "MIT"
-name = "zoxide"
+name = "zcd"
 readme = "README.md"
-repository = "https://github.com/ajeetdsouza/zoxide"
+repository = "https://github.com/dra11y/zcd"
 rust-version = "1.85.0"
 version = "0.9.8"
 
@@ -17,10 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 anyhow = "1.0.32"
-askama = { version = "0.14.0", default-features = false, features = [
-    "derive",
-    "std",
-] }
+askama = { version = "0.14.0", default-features = false, features = ["derive", "std"] }
 bincode = "1.3.1"
 clap = { version = "4.3.0", features = ["derive"] }
 color-print = "0.3.4"
@@ -32,10 +29,7 @@ ouroboros = "0.18.3"
 serde = { version = "1.0.116", features = ["derive"] }
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.30.1", default-features = false, features = [
-    "fs",
-    "user",
-] }
+nix = { version = "0.30.1", default-features = false, features = ["fs", "user"] }
 
 [target.'cfg(windows)'.dependencies]
 which = "7.0.3"
@@ -63,52 +57,11 @@ debug = 0
 lto = true
 strip = true
 
-[package.metadata.deb]
-assets = [
-    [
-        "target/release/zoxide",
-        "usr/bin/",
-        "755",
-    ],
-    [
-        "contrib/completions/zoxide.bash",
-        "usr/share/bash-completion/completions/zoxide",
-        "644",
-    ],
-    [
-        "contrib/completions/zoxide.fish",
-        "usr/share/fish/vendor_completions.d/",
-        "664",
-    ],
-    [
-        "contrib/completions/_zoxide",
-        "usr/share/zsh/vendor-completions/",
-        "644",
-    ],
-    [
-        "man/man1/*",
-        "usr/share/man/man1/",
-        "644",
-    ],
-    [
-        "README.md",
-        "usr/share/doc/zoxide/",
-        "644",
-    ],
-    [
-        "CHANGELOG.md",
-        "usr/share/doc/zoxide/",
-        "644",
-    ],
-    [
-        "LICENSE",
-        "usr/share/doc/zoxide/",
-        "644",
-    ],
-]
-extended-description = """\
-zoxide is a smarter cd command, inspired by z and autojump. It remembers which \
-directories you use most frequently, so you can "jump" to them in just a few \
-keystrokes."""
-priority = "optional"
-section = "utils"
+# [package.metadata.deb]
+# assets = [["target/release/zcd", "usr/bin/", "755"], ["contrib/completions/zcd.bash", "usr/share/bash-completion/completions/zcd", "644"], ["contrib/completions/zcd.fish", "usr/share/fish/vendor_completions.d/", "664"], ["contrib/completions/_zcd", "usr/share/zsh/vendor-completions/", "644"], ["man/man1/*", "usr/share/man/man1/", "644"], ["README.md", "usr/share/doc/zcd/", "644"], ["CHANGELOG.md", "usr/share/doc/zcd/", "644"], ["LICENSE", "usr/share/doc/zcd/", "644"]]
+# extended-description = """\
+# zcd is a smarter cd command with git-style <TAB> completion, forked from zcd, inspired by z and autojump. It remembers which \
+# directories you use most frequently, so you can "jump" to them in just a few \
+# keystrokes."""
+# priority = "optional"
+# section = "utils"

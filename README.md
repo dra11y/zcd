@@ -426,7 +426,7 @@ When calling `zoxide init`, the following flags are available:
 Environment variables[^2] can be used for configuration. They must be set before
 `zoxide init` is called.
 
-- `_ZO_DATA_DIR`
+- `_ZCD_DATA_DIR`
   - Specifies the directory in which the database is stored.
   - The default value varies across OSes:
 
@@ -436,10 +436,10 @@ Environment variables[^2] can be used for configuration. They must be set before
     | macOS       | `$HOME/Library/Application Support`      | `/Users/Alice/Library/Application Support` |
     | Windows     | `%LOCALAPPDATA%`                         | `C:\Users\Alice\AppData\Local`             |
 
-- `_ZO_ECHO`
+- `_ZCD_ECHO`
   - When set to 1, `z` will print the matched directory before navigating to
     it.
-- `_ZO_EXCLUDE_DIRS`
+- `_ZCD_EXCLUDE_DIRS`
   - Excludes the specified directories from the database.
   - This is provided as a list of [globs][glob], separated by OS-specific
     characters:
@@ -450,14 +450,14 @@ Environment variables[^2] can be used for configuration. They must be set before
     | Windows             | `;`       | `$HOME;$HOME/private/*` |
 
   - By default, this is set to `"$HOME"`.
-- `_ZO_FZF_OPTS`
+- `_ZCD_FZF_OPTS`
   - Custom options to pass to [fzf] during interactive selection. See
     [`man fzf`][fzf-man] for the list of options.
-- `_ZO_MAXAGE`
+- `_ZCD_MAXAGE`
   - Configures the [aging algorithm][algorithm-aging], which limits the maximum
     number of entries in the database.
   - By default, this is set to 10000.
-- `_ZO_RESOLVE_SYMLINKS`
+- `_ZCD_RESOLVE_SYMLINKS`
   - When set to 1, `z` will resolve symlinks before adding directories to the
     database.
 

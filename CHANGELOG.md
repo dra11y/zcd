@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fzf: removed `--select-1` from default options. The interactive selector will
   now open up even if there is only one match.
-- Enforce that `$_ZO_DATA_DIR` is an absolute path.
+- Enforce that `$_ZCD_DATA_DIR` is an absolute path.
 
 ### Fixed
 
@@ -78,7 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fish: `cd` command is now copied directly from
   `$__fish_data_dir/functions/cd.fish`. This should minimize the chances of an
   infinite loop when aliasing `cd=z`.
-- Symlinks not getting added to the database when `$_ZO_RESOLVE_SYMLINKS=0`.
+- Symlinks not getting added to the database when `$_ZCD_RESOLVE_SYMLINKS=0`.
 - Symlinked database files getting replaced instead of the actual files.
 
 ## [0.9.4] - 2024-02-21
@@ -322,7 +322,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `zoxide remove -i` now accepts multiple selections.
 - `zoxide add` no longer accepts zero parameters.
-- `$_ZO_EXCLUDE_DIRS` now defaults to `"$HOME"`.
+- `$_ZCD_EXCLUDE_DIRS` now defaults to `"$HOME"`.
 - Binary releases now use `.zip` on Windows, `.tar.gz` otherwise.
 
 ### Fixed
@@ -365,7 +365,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `$_ZO_EXCLUDE_DIRS` now supports globs.
+- `$_ZCD_EXCLUDE_DIRS` now supports globs.
 - `zoxide init` now defines `__zoxide_z*` functions that can be aliased as
   needed.
 - Support for the [Xonsh](https://xon.sh/) shell.
@@ -394,15 +394,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `$_ZO_FZF_OPTS` to specify custom options for `fzf`
+- `$_ZCD_FZF_OPTS` to specify custom options for `fzf`
 - `zoxide query --list` to list all matches
 - `zoxide query --score` to show score along with result
 
 ### Changed
 
-- Increased default value of `$_ZO_MAXAGE` to `10000`.
+- Increased default value of `$_ZCD_MAXAGE` to `10000`.
 - Symlinks are treated as separate directories by default, this can be changed
-  by setting `_ZO_RESOLVE_SYMLINKS=1`.
+  by setting `_ZCD_RESOLVE_SYMLINKS=1`.
 
 ### Removed
 
@@ -434,7 +434,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interactive mode in `zoxide` no longer errors out if `fzf` exits gracefully.
 - Canonicalize to regular paths instead of UNC paths on Windows.
 - `zoxide init` now uses PWD hooks by default for better performance.
-- `$_ZO_ECHO` now only works when set to `1`.
+- `$_ZCD_ECHO` now only works when set to `1`.
 - Using the `--z-cmd` flag now also renames the associated aliases.
 - The `--z-cmd` flag has been renamed to `--cmd`.
 - The `--no-define-aliases` flag has been renamed to `--no-aliases`.
@@ -463,7 +463,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Automatic migration from `v0.2.x` databases.
-- `$_ZO_EXCLUDE_DIRS` to prevent directories from being added to the database.
+- `$_ZCD_EXCLUDE_DIRS` to prevent directories from being added to the database.
 - Support for POSIX-compliant shells.
 
 ### Changed
@@ -491,7 +491,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `$_ZO_ECHO` to echo match before `cd`ing.
+- `$_ZCD_ECHO` to echo match before `cd`ing.
 - Minimal `ranger` plugin.
 - PWD hook to only update the database when the current directory is changed.
 - Support for Bash.
