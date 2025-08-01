@@ -34,126 +34,61 @@ After successful task completion and validation, I will execute checkpoint commi
 ## Phase 0: Foundation (Immediate) - ATOMIC TASKS
 **STATUS: ✅ COMPLETE**
 
-#### ✅ **COMPLETED**:
-- [x] 0.1a: Update Cargo.toml package name: `zoxide` → `zcd` ✅ **DONE BY USER**
-- [x] 0.1b: Update help templates in src/cmd/cmd.rs ✅ **DONE BY USER**
-- [x] 0.1c: Change environment variable references `_ZO_` → `_ZCD_` ✅ **DONE BY USER**
-- [x] 0.1d: Update database path constants ✅ **DONE BY USER**
-- [x] 0.2a: Comment out Tier 3 shells in InitShell enum ✅ **SKIP** (will handle in init.rs)
-- [x] 0.2b: Remove Tier 3 shell templates from templates/ directory ✅ **SKIP** (templates deleted)
-- [x] 0.3a: Remove askama from Cargo.toml dependencies ✅ **COMPLETED**
-- [x] 0.3b: Delete templates/ directory entirely ✅ **COMPLETED** (verified: 0 files)
-- [x] 0.3c: Remove shell.rs module completely ✅ **COMPLETED**
+- [x] 0.1a: Update Cargo.toml package name: `zoxide` → `zcd`
+- [x] 0.1b: Update help templates in src/cmd/cmd.rs
+- [x] 0.1c: Change environment variable references `_ZO_` → `_ZCD_`
+- [x] 0.1d: Update database path constants
+- [x] 0.3a: Remove askama from Cargo.toml dependencies
+- [x] 0.3b: Delete templates/ directory entirely
+- [x] 0.3c: Remove shell.rs module completely
 
-**User Note**: ✅ **Bulk operations** (renaming, refactoring) should be done by user with VS Code tools
-**Deleted Folders Analysis**:
-- `/man` - Man pages, can regenerate with clap later ✅ **OK TO DELETE**
-- `/contrib` - Old completion scripts that don't work ✅ **OK TO DELETE**
-- `/zoxide.plugin.zsh` - Legacy plugin file ✅ **OK TO DELETE**
-- Decision: These were legacy/broken components, deletion accelerates cleanup ✅
+## Phase 1: Core Implementation - ATOMIC TASKS
+**STATUS: ✅ COMPLETE**
 
-## Verification Protocols by Task Type
+- [x] 1.1a: Create src/cmd/complete.rs with Complete struct
+- [x] 1.1b: Add Complete variant to Cmd enum in cmd.rs
+- [x] 1.1c: Add Complete to mod.rs exports
+- [x] 1.2a: Implement basic complete_paths() function (database only)
+- [x] 1.2b: Add current_dir_subdirs() filesystem fallback
+- [x] 1.2c: Implement merge_results() for db + filesystem
+- [x] 1.3a: Create src/shell_gen.rs module
+- [x] 1.3b: Implement generate_bash_init() function
+- [x] 1.3c: Update init.rs to use shell_gen instead of templates
+- [x] 1.4a: Add unit tests for completion and shell generation logic
 
-### Phase 1: Core Implementation Tasks
+## Phase 2: Shell Integration - ATOMIC TASKS
+**STATUS: ✅ COMPLETE**
 
-#### 1.1a: Create complete.rs command structure
-**Automated Validation:**
-```bash
-ls src/cmd/complete.rs && echo "SUCCESS: file created" || echo "FAILED: file missing"
-cargo check src/cmd/complete.rs 2>&1 || echo "FAILED: compilation errors"
-```
-**User Verification Required:** ✅ **API Design Decision**
-**My Question:** "Complete command structure created. I've designed it to take `zcd complete <partial>` with optional `--limit` flag. Should it also accept `--current-dir` explicitly, or auto-detect from environment?"
-
-#### 1.2a: Implement basic complete_paths() function
-**Automated Validation:**
-```bash
-cargo run -- complete /tmp 2>/dev/null | wc -l  # Should return >0 results
-timeout 1s cargo run -- complete /usr/bin 2>/dev/null | head -5  # Should be fast
-```
-**User Verification Required:** ✅ **Behavior Design Decision**
-**My Question:** "Basic completion working. Testing with `/usr/bin` returns X results. Should completion prioritize exact prefix matches over fuzzy matches, or mix them? What's your preference for ordering?"
-
-#### 1.3a: Create shell_gen.rs module
-**Automated Validation:**
-```bash
-ls src/shell_gen.rs && echo "SUCCESS: module created" || echo "FAILED: missing"
-cargo check src/shell_gen.rs 2>&1 || echo "FAILED: compilation errors"
-```
-**User Verification Required:** ✅ **Implementation Approach Decision**
-**My Question:** "Shell generation module created. I can implement this as: A) Simple format!() strings, B) Builder pattern for complex shells, or C) Template-like structs. Given your 'no askama' preference, which approach feels most maintainable?"
-
-#### 1.3b: Implement generate_bash_init()
-**Automated Validation:**
-```bash
-cargo run -- init bash 2>/dev/null | wc -l  # Should be <15 lines
-cargo run -- init bash 2>/dev/null | grep -c "_z_complete"  # Should be 1
-```
-**User Verification Required:** ✅ **Shell Integration Decision**
-**My Question:** "Bash init generation working, produces X lines. The generated completion function calls `zcd complete` - should it include error handling if zcd binary is missing, or keep it minimal?"
-
-### Phase 2: Shell Integration Tasks
-
-#### 2.1a: Test bash completion integration
-**Automated Validation:**
-```bash
-# Complex validation requiring shell environment
+- [x] 2.1a: Test completion command functionality
+- [x] 2.1b: Test bash completion with generated functions
+- [x] 2.1c: Test zsh completion with generated functions
+- [x] 2.1d: Test fish completion with generated functions
+- [x] 2.2a: Create PowerShell proof-of-concept (29 lines - under 50 limit)
+- [x] 2.2b: Document PowerShell decision (keep - under 50 lines)
+- [x] 2.3a: Remove zi command references from all shells
+- [x] 2.3b: Simplify to z-only functionality
+- [x] 2.4a: Implement `_ZCD_EXECUTABLE` environment variable support
 echo "Manual testing required"
 ```
 **User Verification Required:** ✅ **Critical Functionality Decision**
 **My Question:** "Generated bash functions ready for testing. I need you to test this manually:
-1. Run `eval \"\$(zcd init bash)\"`
-2. Try `z /ho<TAB>`
-3. Does it complete to `/home`?
-4. Is the completion speed acceptable?
-5. Any unexpected behavior?"
+## ✅ Phase 0: Foundation (COMPLETED)
+- Package rename (zoxide → zcd) in Cargo.toml and help text
+- Database migration system from zoxide format
+- Shell support prioritization (bash/zsh/fish + powershell)
+- Removed askama template dependency and templates/
 
-#### 2.2a: PowerShell proof-of-concept
-**Automated Validation:**
-```bash
-cargo run -- init powershell 2>/dev/null | wc -l  # Should be <50 lines
-```
-**User Verification Required:** ✅ **Platform Strategy Decision**
-**My Question:** "PowerShell completion generated at X lines. Given that most zoxide issues come from Windows complexity, and this requires Y PowerShell features, should we:
-A) Keep it and maintain Windows support
-B) Remove it and focus on Unix shells
-C) Keep it but mark as 'experimental'?"
+## ✅ Phase 1: Core Architecture (COMPLETED)
+- `zcd complete <partial>` command implementation
+- Completion engine with database + filesystem results
+- Query command preserved with existing functionality
+- Static shell script generation (shell_gen.rs)
 
-### Phase 3: Enhancement Tasks
-
-#### 3.2b: Database migration implementation
-**Automated Validation:**
-```bash
-# Test with dummy zoxide database
-mkdir -p ~/.local/share/zoxide && touch ~/.local/share/zoxide/db.zo
-cargo run -- query test 2>/dev/null && echo "Migration working" || echo "Migration failed"
-```
-**User Verification Required:** ✅ **Migration Strategy Decision**
-**My Question:** "Database migration implemented. When testing with existing zoxide data, should zcd:
-A) Import once and never check again
-B) Continuously sync with zoxide database
-C) Import and then ignore zoxide database
-D) Prompt user for migration preference?"
-
-### Verification Decision Matrix
-
-| Task Type | Auto Validation | User Verification | Question Category |
-|-----------|----------------|-------------------|-------------------|
-| File deletion | ✅ | ❌ | None |
-| Dependency removal | ✅ | ❌ | None |
-| Package rename | ✅ | ✅ | Critical Decision |
-| API design | ✅ | ✅ | Design Decision |
-| Shell integration | ⚠️ | ✅ | Manual Testing |
-| Platform support | ✅ | ✅ | Strategy Decision |
-| Migration logic | ✅ | ✅ | Behavior Decision |
-
-### Question Categories Explained
-
-- **Critical Decision**: Changes that affect user experience or compatibility
-- **Design Decision**: API or architectural choices that impact future development
-- **Manual Testing**: Functionality that requires real shell environment testing
-- **Strategy Decision**: Platform support, feature scope, or maintenance burden choices
-- **Behavior Decision**: How the tool should behave in edge cases or user scenarios
+## ✅ Phase 2: Shell Integration (COMPLETED)
+- 3-line shell wrapper functions generated
+- Bash/zsh/fish completion integration
+- Ultra-minimal shell functions calling Rust binary
+- PowerShell experimental support
 
 ### 0.1 Package Rename and Rebranding
 - **Package name**: Change `zoxide` to `zcd` in Cargo.toml
@@ -162,275 +97,21 @@ D) Prompt user for migration preference?"
 - **Environment variables**: Change `_ZCD_*` to `_ZCD_*` prefixes
 - **Command references**: Update all internal command help/error messages
 
-### 0.2 Shell Support Prioritization
-- **Tier 1**: bash, zsh, fish (full implementation)
-- **Tier 2**: powershell (minimal wrapper, evaluate feasibility)
-- **Tier 3**: elvish, nushell, posix, tcsh, xonsh (remove support temporarily)
-- **Action**: Comment out/remove Tier 3 shell support in init command and templates
 
-### 0.3 Database Migration System
-- **Auto-import**: Detect existing zoxide database and automatically import on first run
-- **Migration framework**: Add version tracking to database format for future changes
-- **Compatibility**: Maintain ability to read zoxide's current database format
-- **Location**: New database at `~/.local/share/zcd/db.zo`
-
-## Phase 1: Core Architecture (Foundation)
-
-### 1.1 Completion Command Design
-- **New command**: `zcd complete <partial>` (separate from query command)
-- **Output format**: One directory path per line, newline-separated
-- **Ordering**: Database matches first (by score), then current directory subdirectories
-- **Performance target**: <50ms response time (not 100ms)
-- **Limit**: Default 20 results, configurable via `--limit` flag
-
-### 1.2 Completion Engine Implementation
-**Module Structure:**
-- `src/cmd/complete.rs` - NEW completion command
-- Complete struct with clap derive for CLI parsing
-- complete_paths() function - main completion logic
-- merge_results() function - combine database + filesystem results
-- format_paths() function - output formatting
-- current_dir_subdirs() function - filesystem fallback
-
-### 1.3 Query Command Current State Analysis
-- **Keep existing**: `--interactive` (uses fzf), `--list`, `--score`, `--exclude`, `--all`
-- **Interactive mode**: Already uses Rust-based fzf integration (util::Fzf)
-- **No changes needed**: Query command functionality remains intact
-- **Separation**: Completion is separate concern from query/navigation
-
-### 1.4 Remove Template System Infrastructure
-- **Delete askama**: Remove askama dependency from Cargo.toml immediately
-- **Remove templates/**: Delete entire templates directory
-- **Remove shell.rs**: Delete template rendering system
-- **Target**: All shell script generation will be pure Rust string building
-
-## Phase 2: Shell Integration (Core Functionality)
-
-### 2.1 Static Shell Script Generation
-- **New module**: `src/shell_gen.rs` - pure Rust string generation
-- **Replace init.rs**: Remove askama template rendering with static generation
-- **Target**: 3-10 lines per shell vs current ~150 lines
-- **No zi command**: Remove interactive alias, only provide `z` function
-
-### 2.2 Shell Function Architecture - SIMPLIFIED (3-Line Wrapper)
-**Key Architecture Change:**
-- **Shell functions**: Ultra-minimal (3 lines max)
-- **Rust binary**: Handles ALL completion logic, UI, and navigation
-- **Interactive completion**: `zcd interactive-navigate` returns shell commands to execute
-- **Git-style UI**: TAB cycling + dropdown menu implemented in Rust, not shell
-- **Implementation**: Generated shell functions call Rust binary and execute returned commands
-
-### 2.3 Bash Completion Implementation
-- **Study git behavior**: Implement identical tab cycling behavior
-- **First tab**: Complete to common prefix or single match
-- **Second tab**: Show completion menu
-- **Third tab**: Cycle through options
-- **Handle edge cases**: No matches, single match, multiple matches
-
-### 2.4 Zsh Completion Implementation
-- **compdef integration**: Use zsh's completion system
-- **Consistent behavior**: Match bash completion UX exactly
-- **Menu completion**: Support zsh's menu selection
-
-### 2.5 Fish Completion Implementation
-- **fish_complete_path**: Use fish's native completion system
-- **Real-time completion**: Fish shows completions as you type
-- **Consistent ordering**: Database first, then filesystem
-
-### 2.6 Windows PowerShell Evaluation
-- **Feasibility study**: Can Rust handle PowerShell completion via minimal wrapper?
-- **Decision criteria**:
-  - If requires >50 lines of PowerShell code → remove support
-  - If Rust can generate simple completion → keep support
-  - Document decision rationale in ROADMAP
-- **User impact**: Most zoxide issues come from Windows complexity
-
-**✅ DECISION: KEEP POWERSHELL SUPPORT**
-- **Rationale**: Generated PowerShell script is only 29 lines (well under 50-line limit)
-- **Implementation**: Uses native PowerShell `Register-ArgumentCompleter` for tab completion
-- **Maintenance burden**: Low - simple script with same pattern as Unix shells
-- **User benefit**: Windows users get working tab completion without complexity
 
 ## Phase 3: Enhanced Features
 
-### 3.1 Pure Rust Completion Implementation - TERMINAL UI-BASED SOLUTION
+### 3.1 Pure Rust Completion Implementation with `inquire`
 
-**STRATEGIC DECISION: Pure Rust Implementation**
+**✅ DECISION: `inquire` Selected as Terminal UI Crate**
 
-**Problem Analysis:**
-The original zoxide author attempted shell-native completion to please power users but encountered the fundamental issue: **shell completion systems are fragmented and unreliable**. Each shell (bash, zsh, fish, PowerShell) has different completion mechanisms, quirks, and failure modes.
+After comprehensive evaluation, `inquire` was selected for its built-in autocomplete support, real-time filtering, TAB key handling, and cross-platform reliability.
 
-**Our Solution:**
-Implement **all completion logic in Rust** using proven terminal UI crates, providing consistent behavior across all shells through minimal shell wrappers.
-
-**Engineering Research Preserved for Reference:**
-
-The following analysis documents how native shell completion works (particularly bash/readline behavior), which serves as our **approximate UX goal** when implementing the pure Rust solution. We want to achieve similar user experience but through reliable Rust implementation rather than fragile shell-native code..
-
-#### 3.1.1 Target Completion Behavior - Pure Rust Implementation
-**Pattern**: `z <partial><TAB>`
-
-**Desired UX (implemented in Rust, not shell-dependent):**
-
-**Case A: Single Match**
-- Completes immediately to full match + trailing space
-- **Example**: `z abc<TAB>` → `z abcd ` (if "abcd" is the only match)
-
-**Case B: Multiple Matches with Common Prefix**
-- Completes to longest common prefix beyond what user typed
-- Shows dropdown menu with all available options
-- **Example**: `z a<TAB>` → `z ab` + menu showing "aba", "abaa", "abcd"
-
-**Case C: Multiple Matches with No Common Prefix**
-- Shows dropdown menu immediately with all available options
-- **Example**: `z x<TAB>` → `z x` + menu showing "xcode", "yarn", "zoom"
-
-**Implementation Note:** This behavior will be consistent across all shells because it's implemented entirely in Rust, not dependent on shell-specific completion systems.
-
-#### 3.1.2 Menu Navigation - Pure Rust Terminal UI
-**Pattern**: `z a<TAB>` (shows menu)
-
-**Navigation Controls (Rust-implemented):**
-- **Arrow Keys**: Navigate up/down through menu options
-- **Tab/Shift-Tab**: Cycle forward/backward through matches
-- **Enter**: Select current highlighted option
-- **Escape**: Cancel completion, return to original input
-- **Typing**: Filter menu results in real-time
-
-**Menu Display Features:**
-- **Highlighted selection**: Clear visual indicator of current choice
-- **Database score indicators**: Show frecency/recency scores (`★★★☆☆` style)
-- **Path categorization**: Recent vs frecency vs filesystem indicators
-- **Syntax highlighting**: Visual distinction for path components
-
-**Implementation**: All menu behavior handled by chosen Rust terminal UI crate, ensuring consistent experience across all shells.
-
-#### 3.1.3 Real-time Filtering and Selection
-**Pattern**: User continues typing while menu is displayed
-
-**Advanced Features (Terminal UI crate dependent):**
-- **Real-time filtering**: As user types additional characters, menu filters to matching results
-- **Fuzzy search**: Optional fuzzy matching for partial path components
-- **Multiple selection modes**: Single selection (default) vs multi-selection for advanced users
-- **Persistent menu**: Menu remains visible until explicit selection or cancellation
-
-**Performance Requirements:**
-- **Menu display**: <100ms initial render
-- **Real-time filtering**: <50ms response to each keystroke
-- **Smooth navigation**: No lag during arrow key movement
-- **Memory efficiency**: Handle 1000+ directory entries without performance degradation
-
-#### 3.1.4 Shell Integration Architecture - Minimal Wrappers
-
-**Pure Rust Strategy:**
-All completion logic is handled by `zcd interactive-navigate`, which returns shell commands for execution. Shell functions are ultra-minimal wrappers that delegate to the Rust binary.
-
-**Shell Function Strategy:**
-- Bash/Zsh: Single function that delegates to `zcd interactive-navigate`
-- Fish: Equivalent delegation using fish syntax
-- PowerShell: Same delegation pattern using PowerShell syntax
-
-**Rust Implementation Handles:**
-- TAB key detection and menu display
-- Arrow key navigation and selection
-- Real-time filtering and search
-- Directory path validation and completion
-- Command generation for shell execution
-
-**Shell Integration is Limited to:**
-- Binding TAB key to trigger `zcd interactive-navigate`
-- Executing returned shell commands (`cd /selected/path`)
-- No shell-specific completion logic whatsoever
-
-#### 3.1.5 Terminal UI Crate Research Requirements
-
-**CRITICAL: Crate Selection Must Support Our Requirements**
-
-Before implementing the pure Rust solution, we must thoroughly research available terminal UI crates to ensure they can deliver the completion experience we want.
-
-**Required Features for Evaluation:**
-1. **TAB key handling**: Can the crate detect and respond to TAB/Shift-TAB key presses?
-2. **Real-time filtering**: Can menu contents be filtered as user types additional characters?
-3. **Arrow key navigation**: Standard up/down navigation through menu items
-4. **Custom key bindings**: Ability to customize which keys trigger which actions
-5. **Performance**: Smooth operation with 100+ menu items
-6. **Cross-platform**: Works reliably on macOS, Linux, and Windows terminals
-
-**Crates to Evaluate:**
-
-**`crossterm` + custom menu:**
-- **Research**: Raw terminal control, custom menu implementation required
-- **Evaluate**: TAB key detection, cursor positioning, menu rendering performance
-- **Test**: Build proof-of-concept completion menu with TAB cycling
-
-**`dialoguer`:**
-- **Research**: Built-in selection menus, customization options
-- **Evaluate**: TAB key support, real-time filtering capabilities
-- **Test**: MultiSelect and Select behaviors, key binding flexibility
-
-**`inquire`:**
-- **Research**: Modern terminal prompts with autocomplete features
-- **Evaluate**: Built-in completion support, fuzzy search, customization
-- **Test**: Autocomplete behavior, performance with large datasets
-
-**`ratatui` (formerly tui-rs):**
-- **Research**: Full terminal UI framework, complex widgets possible
-- **Evaluate**: Learning curve vs feature completeness, event handling
-- **Test**: Custom completion widget implementation feasibility
-
-**`console`:**
-- **Research**: Simple terminal utilities, basic selection support
-- **Evaluate**: Menu capabilities, key handling limitations
-- **Test**: Term and Style features for basic completion menus
-
-**Evaluation Methodology:**
-1. **Prototype Phase**: Build minimal completion menu with each crate
-2. **Feature Testing**: Verify TAB handling, filtering, navigation works as expected
-3. **Performance Benchmarking**: Test with 1000+ items, measure response times
-4. **User Experience**: Evaluate look/feel compared to familiar completion systems
-5. **Documentation Review**: Assess maintenance burden, community support, API stability
-
-**Decision Criteria:**
-- **TAB Support**: Must handle TAB key events reliably
-- **Implementation Effort**: Reasonable development time to working completion
-- **Performance**: <100ms menu display, <50ms filtering response
-- **Maintenance**: Active crate with good documentation and community
-- **Cross-platform**: Works consistently across all target platforms
-
-**Phase 3.1a Deliverable**: Comprehensive crate evaluation report with recommendation
-
-#### 3.1.6 DECISION: `inquire` Selected as Terminal UI Crate
-
-**Research Results Summary:**
-After comprehensive evaluation of available Rust terminal UI crates, `inquire` has been selected as the optimal choice for implementing zcd's completion and menu system.
-
-**Why `inquire` is the Perfect Choice:**
-- ✅ **Built-in autocomplete support** with `Text::with_autocomplete()` API
-- ✅ **Real-time filtering** as user types additional characters
-- ✅ **TAB key handling** works out-of-the-box for completion cycling
-- ✅ **Arrow key navigation** built into selection prompts
-- ✅ **Modern, well-maintained** crate with active development
-- ✅ **Cross-platform** via crossterm backend (macOS/Linux/Windows)
-- ✅ **Single dependency** - everything needed in one package
-- ✅ **Performance optimized** for interactive CLI prompts
-- ✅ **Familiar UX patterns** that match user expectations
-
-**Implementation Strategy:**
-Instead of trying to perfectly mimic each shell's native completion behavior, we'll leverage `inquire`'s built-in patterns to provide a consistent, high-quality completion experience across all shells. Users will trade shell-specific quirks for a working, reliable tool.
-
-**Key Architecture Insights:**
-1. **Delegate to `inquire`**: Let the crate handle TAB cycling, arrow navigation, and real-time filtering
-2. **Approximate git-like UX**: Use `inquire`'s selection patterns to provide familiar completion behavior
-3. **Focus on user experience**: Prioritize working completion over perfect shell mimicry
-4. **Consistent across shells**: Same UX whether user is in bash, zsh, fish, or PowerShell
-
-#### 3.1.7 `inquire`-Based Implementation Plan
-
-**IMPLEMENTATION ARCHITECTURE:**
-- **Interactive Navigation Command**: `zcd interactive-navigate [partial]`
-- **Autocomplete Integration**: Custom `Autocomplete` trait implementation
-- **Menu System**: Built-in `inquire` selection prompts with real-time filtering
-- **Shell Integration**: Minimal 3-line wrappers that call interactive command
+**Engineering Strategy: `inquire`-First Implementation**
+- All completion logic in Rust via `zcd interactive-navigate` command
+- Ultra-minimal shell wrappers (3 lines) that delegate to Rust binary
+- Consistent UX across all shells through pure Rust implementation
+- Leverage `inquire`'s built-in patterns instead of mimicking shell completion quirks
 
 **Phase 3.1a: Add `inquire` Dependency and Basic Structure**
 - [x] **Decision Made**: `inquire` selected as terminal UI crate ✅ **COMPLETED**
@@ -471,21 +152,6 @@ Instead of trying to perfectly mimic each shell's native completion behavior, we
 - [ ] Error handling for unsupported terminals or missing `inquire` features
 - [ ] Performance validation on different platforms (macOS/Linux/Windows)
 - [ ] User acceptance testing with common completion workflows
-
-**inquire-Specific Implementation Details:**
-
-**Custom Autocomplete Implementation:**
-```rust
-use inquire::{Autocomplete, Text};
-
-struct PathAutocomplete {
-    // Integrates with existing complete_paths() logic
-    database: Database,
-    current_dir: PathBuf,
-}
-
-impl Autocomplete for PathAutocomplete {
-    fn get_suggestions(&mut self, input: &str) -> Vec<String> {
         // Call existing complete_paths() function
         // Return database matches + filesystem results
         // Apply frecency scoring and limits
@@ -496,192 +162,52 @@ impl Autocomplete for PathAutocomplete {
 **Interactive Navigation Command:**
 ```rust
 // New subcommand: zcd interactive-navigate [partial]
-pub fn interactive_navigate(partial: Option<String>) -> Result<()> {
-    let autocomplete = PathAutocomplete::new()?;
-    let prompt = Text::new("Navigate to:")
-        .with_autocomplete(autocomplete)
-        .with_initial_value(partial.unwrap_or_default());
+### 3.2 Future Enhancement Tasks
 
-    let result = prompt.prompt()?;
-    println!("cd {}", shell_escape(&result));
-    Ok(())
-}
-```
+**Phase 3.2a: Advanced Completion Features**
+- [ ] Fuzzy matching for partial path components
+- [ ] Configurable completion scoring algorithms
+- [ ] Custom path aliases and shortcuts
+- [ ] Directory bookmark system integration
 
-**Shell Integration Example (Bash):**
-```bash
-# Generated 3-line wrapper function
-_z_complete() {
-    local result=$(zcd interactive-navigate "${COMP_WORDS[COMP_CWORD]}")
-    eval "$result"
-}
-```
+**Phase 3.2b: Performance Optimization**
+- [ ] Background database indexing for faster queries
+- [ ] Caching layer for frequently accessed paths
+- [ ] Memory usage optimization for large directory trees
+- [ ] Response time profiling and benchmarking tools
 
-**Expected User Experience:**
-1. User types: `z proj<TAB>`
-2. `inquire` displays interactive menu with matching directories
-3. User can:
-   - Continue typing to filter (real-time)
-   - Use arrow keys to navigate
-   - Press TAB to cycle through matches
-   - Press Enter to select
-   - Press Esc to cancel
-4. Selected directory is executed: `cd /path/to/project`
+**Phase 3.2c: User Experience Enhancements**
+- [ ] Customizable prompt styling and themes
+- [ ] Keyboard shortcut configuration system
+- [ ] Integration with shell history and path prediction
+- [ ] Error reporting and debugging tools for completion issues
 
-**Performance Targets:**
-- **Menu display**: <100ms from TAB press to visible menu
-- **Real-time filtering**: <50ms response to each keystroke
-- **Navigation**: <20ms response to arrow key presses
-- **Memory usage**: <10MB for completion state
-- **Large datasets**: Handle 1000+ directory entries smoothly
+### 3.3 Long-term Roadmap
 
-**Advantages of `inquire` Approach:**
-- **No shell dependency**: Works regardless of shell completion system
-- **Consistent behavior**: Same UX in bash/zsh/fish/PowerShell
-- **Better error handling**: Rust error messages vs shell script failures
-- **Lower maintenance**: Single implementation vs per-shell maintenance
-- **Performance control**: Direct optimization vs shell script overhead
-- **Rich features**: Built-in fuzzy search, styling, keyboard shortcuts
+**Phase 3.3a: Platform Expansion**
+- [ ] Native Windows completion (beyond PowerShell)
+- [ ] Terminal emulator-specific optimizations
+- [ ] SSH/remote completion support
+- [ ] Container/Docker environment integration
 
-#### 3.1.9 Engineering Strategy: `inquire`-First Implementation
+**Phase 3.3b: Advanced Features**
+- [ ] Multi-directory navigation (select multiple paths)
+- [ ] Path prediction based on usage patterns
+- [ ] Integration with external tools (git, docker, etc.)
+- [ ] Plugin system for custom completion sources
 
-**Core Philosophy: Leverage `inquire`'s Strengths**
-Instead of trying to perfectly replicate each shell's native completion behavior, we embrace `inquire`'s built-in patterns to deliver a superior, consistent completion experience. Users get reliability and functionality over shell-specific quirks.
+---
 
-**Key Strategic Decisions:**
+## Development Workflow
 
-1. **Delegate Complex UX to `inquire`**:
-   - Let `inquire` handle TAB cycling, real-time filtering, and menu navigation
-   - Focus our effort on data integration (database + filesystem completion)
-   - Trust `inquire`'s proven patterns for terminal interaction
+**Current Status**: Phase 3.1a complete - `inquire` selected as terminal UI solution
 
-2. **Approximate Git-Like UX, Don't Mimic**:
-   - Use `inquire`'s autocomplete for TAB completion behavior
-   - Implement familiar selection patterns (arrow keys, Enter/Esc)
-   - Prioritize working completion over perfect shell-native behavior
+**Next Steps**:
+1. Phase 3.1b: Add `inquire` dependency and implement basic `interactive-navigate` command
+2. Phase 3.1c: Integrate with existing completion logic
+3. Phase 3.1d: Update shell wrappers to use new interactive system
 
-3. **Consistent Cross-Shell Experience**:
-   - Same completion UX whether user is in bash, zsh, fish, or PowerShell
-   - Shell wrappers become ultra-minimal (≤3 lines)
-   - All logic and state management handled in Rust
-
-4. **Performance-First Implementation**:
-   - Leverage `inquire`'s optimized terminal rendering
-   - Integrate our fast completion logic (already <4ms)
-   - Target <100ms total completion experience
-
-**Implementation Architecture:**
-
-```
-User Types: z proj<TAB>
-     ↓
-Shell Wrapper (3 lines):
-     calls: zcd interactive-navigate proj
-     ↓
-Rust Binary:
-     • PathAutocomplete::get_suggestions("proj")
-     • inquire::Text::with_autocomplete()
-     • User selects from menu
-     • Returns: cd /path/to/project
-     ↓
-Shell Wrapper:
-     eval "cd /path/to/project"
-```
-
-**User Experience Goals:**
-- **Familiar**: Feels like git/fzf completion that users expect
-- **Fast**: Sub-100ms response from TAB to visible menu
-- **Reliable**: Works the same way in any shell/terminal
-- **Rich**: Shows frecency scores, path context, real-time filtering
-- **Simple**: No configuration needed, works out of the box
-
-**Technical Benefits:**
-- **Single implementation**: One codebase for all shells
-- **Rich features**: Real-time filtering, fuzzy search, visual scoring
-- **Better testing**: Rust unit tests vs shell script testing
-- **Cross-platform**: Consistent behavior on macOS/Linux/Windows
-- **Maintainable**: Well-documented `inquire` API vs custom terminal code
-
-**Trade-offs We Accept:**
-- **Shell-specific quirks**: Users lose some shell-native completion behaviors
-- **Dependency**: Add `inquire` dependency vs pure-stdlib approach
-- **Learning curve**: Slightly different UX than native shell completion
-- **Terminal requirements**: Requires color terminal for best experience
-
-**Why This Strategy Succeeds:**
-1. **Solves the core problem**: zoxide's broken completion will actually work
-2. **Provides better UX**: Rich visual feedback and consistent behavior
-3. **Reduces complexity**: Single implementation vs 4+ shell systems
-4. **Enables future features**: Foundation for advanced completion features
-5. **Pragmatic approach**: Working tool vs theoretical perfection
-
-#### 3.1.8 Performance and Reliability Requirements
-- **Menu display**: <100ms initial rendering with terminal UI crate
-- **Real-time filtering**: <50ms response to keystroke input
-- **Navigation response**: <20ms for arrow key movement
-- **Memory usage**: <10MB for completion state and menu data
-- **Cross-platform consistency**: Identical behavior on all supported platforms
-- **Error handling**: Graceful fallback if terminal UI unavailable
-
-**Reliability Advantages of Pure Rust:**
-- **No shell dependency**: Works regardless of shell completion system quirks
-- **Consistent behavior**: Same UX in bash, zsh, fish, PowerShell
-- **Better error handling**: Rust error messages vs cryptic shell script failures
-- **Performance control**: Direct optimization vs shell script overhead
-- **Maintenance simplicity**: Single implementation vs per-shell maintenance
-
-#### 3.1.7 Implementation Phases
-**Phase 3.1a**: Terminal UI crate evaluation and selection
-**Phase 3.1b**: Basic menu display with arrow key navigation
-**Phase 3.1c**: TAB key handling and cycling behavior
-**Phase 3.1d**: Real-time filtering and search capabilities
-**Phase 3.1e**: Shell integration with minimal wrapper functions
-**Phase 3.1f**: Cross-platform testing and performance optimization
-
-#### 3.1.8 Terminal UI Crate Evaluation (Phase 3.1a)
-
-**`crossterm` Analysis:**
-- **Pros**:
-  - Full terminal control (cursor positioning, key detection)
-  - Custom TAB key handling possible
-  - Raw mode terminal access
-  - Cross-platform (Windows/Unix)
-- **Cons**:
-  - More implementation work required
-  - Manual event loop and UI state management
-  - No built-in menu/selection widgets
-- **Best for**: Custom git-exact TAB cycling behavior
-
-**`dialoguer` Analysis:**
-- **Pros**:
-  - Simple API for selection menus
-  - Built-in multi-select and single-select
-  - Good defaults for common use cases
-  - Lightweight dependency
-- **Cons**:
-  - Limited customization of key bindings
-  - May not support exact TAB cycling
-  - Less control over menu appearance
-- **Best for**: Quick MVP with standard selection behavior
-
-**`inquire` Analysis:**
-- **Pros**:
-  - Modern design with rich features
-  - Built-in autocomplete and fuzzy search
-  - Customizable key bindings
-  - Real-time filtering support
-- **Cons**:
-  - Heavier dependency
-  - More complex API
-  - Potential overkill for simple selection
-- **Best for**: Full-featured completion with search capabilities
-
-**Decision Matrix:**
-
-| Feature | crossterm | dialoguer | inquire |
-|---------|-----------|-----------|---------|
-| TAB cycling | ✅ Custom | ❓ Limited | ✅ Yes |
-| Arrow navigation | ✅ Custom | ✅ Built-in | ✅ Built-in |
+**Branch Strategy**: Working on `inquire` branch for all Phase 3.1 implementation
 | Real-time filter | ✅ Custom | ❌ No | ✅ Built-in |
 | Syntax highlighting | ✅ Custom | ❌ No | ❓ Limited |
 | Implementation effort | High | Low | Medium |
