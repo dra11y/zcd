@@ -1,0 +1,208 @@
+# zcd Technical Roadmap
+
+## Project Goals
+Fork zoxide to create working tab completion that functions like `git checkout <TAB>` without external dependencies or complex shell scripts.
+
+## Phase 1: Core Architecture (Foundation)
+
+### 1.1 Binary Interface Design
+- Add `zcd complete <partial>` command that outputs completion candidates
+- Design universal output format compatible with bash/zsh/fish completion systems
+- Output format: one path per line, sorted by score, limited count (configurable)
+- Add `--completion-limit` flag (default: 20)
+
+### 1.2 Completion Engine Implementation
+```
+src/cmd/complete.rs - new completion command
+├── CompletionOptions struct
+├── complete_paths() function
+├── format_for_shell() function
+└── filter_and_rank() function
+```
+
+### 1.3 Database Query Optimization
+- Modify `Stream` to support prefix matching for tab completion
+- Add completion-specific filtering in `db/stream.rs`
+- Ensure completion queries don't modify database state
+- Optimize for speed: completion must be <100ms
+
+### 1.4 Remove fzf Dependencies
+- Evaluate Rust TUI crates for future interactive selection:
+  - `ratatui` (most popular, terminal UI framework)
+  - `crossterm` (cross-platform terminal manipulation)
+  - `dialoguer` (simple prompts/menus)
+  - Decision: Document pros/cons, defer implementation to Phase 3
+
+## Phase 2: Shell Integration (Core Functionality)
+
+### 2.1 Generate Minimal Shell Functions
+- Create new shell function generator in `src/shell_gen.rs`
+- Generate identical code where possible across bash/zsh/fish
+- Target: 3-10 lines per shell vs current ~150 lines
+- Functions needed:
+  ```bash
+  z() {
+    # 3-line wrapper calling zcd binary
+  }
+  _z_complete() {
+    # completion function calling zcd complete
+  }
+  ```
+
+### 2.2 Bash Completion Implementation
+- Study `git` completion behavior in bash
+- Implement `_z_complete()` function calling `zcd complete`
+- Test tab cycling behavior: first tab → complete, second tab → cycle
+- Handle edge cases: no matches, single match, multiple matches
+
+### 2.3 Zsh Completion Implementation
+- Implement zsh-compatible completion using `compdef`
+- Ensure identical behavior to bash where possible
+- Test in zsh with same cycling expectations
+
+### 2.4 Fish Completion Implementation
+- Implement fish-compatible completion
+- Fish has different completion model - document differences
+- Maintain consistent user experience across shells
+
+## Phase 3: Enhanced Features
+
+### 3.1 Completion Behavior Refinement
+- Implement git-style cycling: `z proj<TAB>` → `z project1/`, `<TAB>` → `z project2/`
+- Add menu display for multiple matches
+- Configure completion limit via environment variable
+- Add current directory exclusion logic
+
+### 3.2 Database Integration
+- Ensure completion candidates include both:
+  - Database entries (frecency-ranked)
+  - Current directory subdirectories (for fallback)
+- Merge and deduplicate results
+- Maintain score-based ordering
+
+### 3.3 Performance Optimization
+- Profile completion performance
+- Cache completion results for repeated queries
+- Optimize database deserialization for read-only queries
+- Target: <50ms completion response time
+
+## Phase 4: Template System Replacement
+
+### 4.1 Remove Existing Templates
+- Delete `templates/` directory
+- Remove `shell.rs` template rendering system
+- Remove askama dependency from Cargo.toml
+
+### 4.2 Static Shell Script Generation
+- Implement new `zcd init <shell>` command
+- Generate static, minimal shell functions
+- No templating - pure string generation
+- Version shell scripts for compatibility tracking
+
+### 4.3 Installation Simplification
+- Single `eval "$(zcd init bash)"` command
+- No external dependencies required
+- Self-contained shell integration
+
+## Phase 5: Rebranding and Polish
+
+### 5.1 Binary Rebranding
+- Change binary name from `zoxide` to `zcd`
+- Update all command help text and error messages
+- Update Cargo.toml package name and metadata
+- Maintain zoxide database compatibility
+
+### 5.2 Documentation Updates
+- Rewrite README.md with zcd branding
+- Document completion behavior differences from zoxide
+- Add migration guide from zoxide
+- Update installation instructions
+
+### 5.3 Windows Support Decision
+- Evaluate Windows shell support complexity
+- Document decision rationale
+- If removed: update supported platforms list
+- If kept: ensure PowerShell completion works
+
+## Technical Implementation Details
+
+### Completion Command Interface
+```rust
+// src/cmd/complete.rs
+pub struct Complete {
+    partial: String,
+    limit: Option<usize>,
+    current_dir: Option<String>,
+}
+```
+
+### Database Query Modifications
+```rust
+// src/db/stream.rs modifications
+impl StreamOptions {
+    pub fn with_prefix_match(mut self, prefix: &str) -> Self
+    pub fn with_completion_mode(mut self, mode: bool) -> Self
+}
+```
+
+### Shell Function Template
+```bash
+# Generated by zcd init bash
+z() {
+    local result
+    if [[ $# -eq 0 ]]; then
+        cd ~
+    elif [[ -d "$1" ]]; then
+        cd "$1"
+    else
+        result="$(zcd query --exclude "$(pwd)" -- "$@")"
+        [[ -n "$result" ]] && cd "$result"
+    fi
+}
+
+_z_complete() {
+    local candidates
+    candidates="$(zcd complete "${COMP_WORDS[COMP_CWORD]}" 2>/dev/null)"
+    COMPREPLY=($(compgen -W "$candidates" -- "${COMP_WORDS[COMP_CWORD]}"))
+}
+complete -F _z_complete z
+```
+
+### File Structure Changes
+```
+src/
+├── cmd/
+│   ├── complete.rs     # NEW: completion engine
+│   └── init.rs         # MODIFIED: generate static shell functions
+├── shell_gen.rs        # NEW: shell script generation
+└── shell.rs            # DELETE: template system
+templates/              # DELETE: entire directory
+```
+
+### Testing Strategy
+- Unit tests for completion engine
+- Integration tests with actual shell environments
+- Performance benchmarks for completion speed
+- Cross-shell behavior consistency tests
+
+### Success Metrics
+- Tab completion works in bash/zsh/fish without configuration
+- <100ms completion response time
+- No external dependencies (fzf removed)
+- Shell integration reduced from ~150 to <10 lines
+- Maintains zoxide database compatibility
+
+## Dependencies to Remove
+- `askama` (template engine)
+- `fzf` integration code
+- Complex shell-specific template logic
+
+## Dependencies to Add
+- TBD: Interactive selection crate (Phase 3)
+- Possibly: `clap_complete` for shell completion helpers
+
+## Risk Mitigation
+- Maintain backward compatibility with zoxide databases
+- Incremental implementation allows testing at each phase
+- Shell-specific testing ensures consistent behavior
+- Performance monitoring prevents regression
