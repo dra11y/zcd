@@ -65,10 +65,6 @@ pub struct Complete {
     /// Maximum number of completion candidates
     #[clap(long, default_value = "20")]
     pub limit: usize,
-
-    /// Current working directory for filesystem completion
-    #[clap(long)]
-    pub current_dir: Option<PathBuf>,
 }
 
 /// Add a new directory or increment its rank

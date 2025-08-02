@@ -46,7 +46,6 @@ Register-ArgumentCompleter -Native -CommandName 'zcd' -ScriptBlock {
         }
         'zcd;complete' {
             [CompletionResult]::new('--limit', '--limit', [CompletionResultType]::ParameterName, 'Maximum number of completion candidates')
-            [CompletionResult]::new('--current-dir', '--current-dir', [CompletionResultType]::ParameterName, 'Current working directory for filesystem completion')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')

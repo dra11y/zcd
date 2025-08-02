@@ -95,17 +95,13 @@ _zcd() {
             return 0
             ;;
         zcd__complete)
-            opts="-h -V --limit --current-dir --help --version <PARTIAL>"
+            opts="-h -V --limit --help --version <PARTIAL>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 --limit)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --current-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

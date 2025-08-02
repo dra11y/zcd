@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::cmd::{Complete, Run};
 use crate::config;
@@ -9,7 +9,9 @@ use crate::util;
 
 impl Run for Complete {
     fn run(&self) -> Result<()> {
-        let paths = complete_paths(&self.partial, self.limit, self.current_dir.as_deref())?;
+        // Get current directory from environment instead of requiring parameter
+        let current_dir = std::env::current_dir().ok();
+        let paths = complete_paths(&self.partial, self.limit, current_dir.as_deref())?;
 
         for path in paths {
             println!("{path}");
@@ -41,7 +43,9 @@ pub fn complete_paths(
 
         // If partial is provided, only include paths that start with it
         if partial.is_empty() || path.starts_with(partial) {
-            results.push(path.to_string());
+            // Smart path formatting: relative for current subtree, absolute for others
+            let formatted_path = format_path_for_completion(path, current_dir);
+            results.push(formatted_path);
 
             if results.len() >= limit {
                 break;
@@ -66,6 +70,79 @@ pub fn complete_paths(
     Ok(results)
 }
 
+/// Format a path for completion based on current directory context
+/// - Current subtree: return relative path (e.g., "subdir/target")
+/// - Direct ancestry: return relative with .. (e.g., "..", "../..", "../sibling")  
+/// - Complex paths: return absolute path for clarity
+fn format_path_for_completion(path: &str, current_dir: Option<&Path>) -> String {
+    let Some(current) = current_dir else {
+        return path.to_string();
+    };
+
+    let path_buf = Path::new(path);
+    let current_abs = current.canonicalize().unwrap_or_else(|_| current.to_path_buf());
+    let target_abs = path_buf.canonicalize().unwrap_or_else(|_| path_buf.to_path_buf());
+
+    // Case 1: Target is within current directory subtree
+    if target_abs.starts_with(&current_abs) {
+        if let Ok(relative) = target_abs.strip_prefix(&current_abs) {
+            let relative_str = relative.to_string_lossy();
+            return if relative_str.is_empty() {
+                ".".to_string()
+            } else {
+                relative_str.to_string()
+            };
+        }
+    }
+
+    // Case 2: Check if we can create a reasonable relative path with ../
+    // Find common ancestor
+    let common_ancestor = find_common_ancestor(&current_abs, &target_abs);
+    
+    if let Some(ancestor) = common_ancestor {
+        // Calculate depth from current to common ancestor
+        let current_depth = current_abs.strip_prefix(&ancestor).map(|p| p.components().count()).unwrap_or(0);
+        let target_relative = target_abs.strip_prefix(&ancestor).unwrap_or(&target_abs);
+        
+        // Only use relative path if it's reasonable (max 3 levels up)
+        if current_depth <= 3 {
+            let up_dirs = "../".repeat(current_depth);
+            let target_path = target_relative.to_string_lossy();
+            
+            return if target_path.is_empty() {
+                up_dirs.trim_end_matches('/').to_string()
+            } else {
+                format!("{}{}", up_dirs, target_path)
+            };
+        }
+    }
+
+    // Case 3: Use absolute path for complex cases
+    path.to_string()
+}
+
+/// Find the common ancestor of two paths
+fn find_common_ancestor(path1: &Path, path2: &Path) -> Option<PathBuf> {
+    let components1: Vec<_> = path1.components().collect();
+    let components2: Vec<_> = path2.components().collect();
+    
+    let mut common = PathBuf::new();
+    
+    for (c1, c2) in components1.iter().zip(components2.iter()) {
+        if c1 == c2 {
+            common.push(c1);
+        } else {
+            break;
+        }
+    }
+    
+    if common.as_os_str().is_empty() {
+        None
+    } else {
+        Some(common)
+    }
+}
+
 /// Get subdirectories from current directory that match the partial input
 pub fn current_dir_subdirs(
     partial: &str,
@@ -87,15 +164,8 @@ pub fn current_dir_subdirs(
                 if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
                     // For filesystem completion, match against directory name, not full path
                     if partial.is_empty() || dir_name.starts_with(partial) {
-                        // Convert to absolute path for consistency with database results
-                        if let Ok(abs_path) = path.canonicalize() {
-                            if let Some(abs_str) = abs_path.to_str() {
-                                results.push(abs_str.to_string());
-                            }
-                        } else if let Some(path_str) = path.to_str() {
-                            // Fallback to relative path if canonicalize fails
-                            results.push(path_str.to_string());
-                        }
+                        // Use relative path for current directory subdirectories
+                        results.push(dir_name.to_string());
                     }
                 }
             }

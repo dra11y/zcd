@@ -42,7 +42,6 @@ _arguments "${_arguments_options[@]}" : \
 (complete)
 _arguments "${_arguments_options[@]}" : \
 '--limit=[Maximum number of completion candidates]:LIMIT:_default' \
-'--current-dir=[Current working directory for filesystem completion]:CURRENT_DIR:_files' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \

@@ -38,7 +38,6 @@ complete -c zcd -n "__fish_zcd_using_subcommand add" -s s -l score -d 'The rank 
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand complete" -l limit -d 'Maximum number of completion candidates' -r
-complete -c zcd -n "__fish_zcd_using_subcommand complete" -l current-dir -d 'Current working directory for filesystem completion' -r -F
 complete -c zcd -n "__fish_zcd_using_subcommand complete" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand complete" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand edit; and not __fish_seen_subcommand_from decrement delete increment reload" -s h -l help -d 'Print help'
