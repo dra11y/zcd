@@ -34,10 +34,10 @@ z() {
 _z_complete() {
     local -a completions
     local result
-    
+
     # Get completions from zcd complete command (Rust gets current directory automatically)
     result="$(${_ZCD_EXECUTABLE:-zcd} complete "${words[CURRENT]}" 2>/dev/null)"
-    
+
     if [[ -n "$result" ]]; then
         # Split result into array and add to completions
         completions=(${(f)result})

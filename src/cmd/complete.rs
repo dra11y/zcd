@@ -72,7 +72,7 @@ pub fn complete_paths(
 
 /// Format a path for completion based on current directory context
 /// - Current subtree: return relative path (e.g., "subdir/target")
-/// - Direct ancestry: return relative with .. (e.g., "..", "../..", "../sibling")  
+/// - Direct ancestry: return relative with .. (e.g., "..", "../..", "../sibling")
 /// - Complex paths: return absolute path for clarity
 fn format_path_for_completion(path: &str, current_dir: Option<&Path>) -> String {
     let Some(current) = current_dir else {
@@ -98,17 +98,18 @@ fn format_path_for_completion(path: &str, current_dir: Option<&Path>) -> String 
     // Case 2: Check if we can create a reasonable relative path with ../
     // Find common ancestor
     let common_ancestor = find_common_ancestor(&current_abs, &target_abs);
-    
+
     if let Some(ancestor) = common_ancestor {
         // Calculate depth from current to common ancestor
-        let current_depth = current_abs.strip_prefix(&ancestor).map(|p| p.components().count()).unwrap_or(0);
+        let current_depth =
+            current_abs.strip_prefix(&ancestor).map(|p| p.components().count()).unwrap_or(0);
         let target_relative = target_abs.strip_prefix(&ancestor).unwrap_or(&target_abs);
-        
+
         // Only use relative path if it's reasonable (max 3 levels up)
         if current_depth <= 3 {
             let up_dirs = "../".repeat(current_depth);
             let target_path = target_relative.to_string_lossy();
-            
+
             return if target_path.is_empty() {
                 up_dirs.trim_end_matches('/').to_string()
             } else {
@@ -125,9 +126,9 @@ fn format_path_for_completion(path: &str, current_dir: Option<&Path>) -> String 
 fn find_common_ancestor(path1: &Path, path2: &Path) -> Option<PathBuf> {
     let components1: Vec<_> = path1.components().collect();
     let components2: Vec<_> = path2.components().collect();
-    
+
     let mut common = PathBuf::new();
-    
+
     for (c1, c2) in components1.iter().zip(components2.iter()) {
         if c1 == c2 {
             common.push(c1);
@@ -135,12 +136,8 @@ fn find_common_ancestor(path1: &Path, path2: &Path) -> Option<PathBuf> {
             break;
         }
     }
-    
-    if common.as_os_str().is_empty() {
-        None
-    } else {
-        Some(common)
-    }
+
+    if common.as_os_str().is_empty() { None } else { Some(common) }
 }
 
 /// Get subdirectories from current directory that match the partial input
