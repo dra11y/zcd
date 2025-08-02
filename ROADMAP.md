@@ -3,10 +3,24 @@
 ## Project Goals
 Fork zoxide to create working tab completion with pure Rust implementation, eliminating external dependencies and complex shell scripts.
 
+## **CRITICAL: TAB COMPLETION RULES**:
+The reason we are doing this in Rust is so we have consistent, predictable behavior without errors across all shells that support any form of basic TAB completion function wrappers.
+1. z ..<TAB> -> nothing (except BEEP!), just like cd ..<TAB> behavior
+2. z ../<TAB> -> menu with parent directory entries (siblings), first entry selected
+3. The above should be recursive, i.e. z ../..<TAB> -> nothing, z ../../<TAB> -> menu with grandparent directory entries, and so on.
+4. single result, either from database OR in current directory: z chil<TAB> -> z child/<NO SPACE> (because user may wish to keep typing a subdirectory)
+5. single result, from database in current tree: z grand<TAB> -> z child/grandchild/<NO SPACE>
+6. single result, from database in ancestor path of current directory: z grand<TAB> -> z ../../grandparent/<NO SPACE>
+7. single result, from database OUTSIDE of current path/tree: z other<TAB> -> z /absolute/path/to/other/
+8. single result, not from database, not in current directory: **IMPOSSIBLE** -- nothing happens, just like z ..<TAB> (BEEP!)
+9. multiple results from database and current dir:
+z mydir<TAB> -> dropdown menu, in order of: current directory child match, if any; then, reverse order of score (highest score first) from database
+10. implement <TAB> cycling in inquire menu, much like git branch completion works in zsh and fish -- similar but not exact, let's do the best we can in Rust.
+
 **KEY ARCHITECTURE:**
 - **Pure Rust completion UI**: All completion logic, cycling, and display handled by Rust binary
 - **Minimal shell integration**: 3-line shell wrapper maximum
-- **Interactive completion**: `zcd interactive-navigate` returns shell commands to execute
+- **Interactive completion**: `zcd interactive` returns shell commands to execute
 - **Terminal UI-based behavior**: Reliable completion UX using proven Rust terminal UI crates
 
 ## Immediate Actions (Foundation)
@@ -117,7 +131,7 @@ fi
 After comprehensive evaluation, `inquire` was selected for its built-in autocomplete support, real-time filtering, TAB key handling, and cross-platform reliability.
 
 **Engineering Strategy: `inquire`-First Implementation**
-- All completion logic in Rust via `zcd interactive-navigate` command
+- All completion logic in Rust via `zcd interactive` command
 - Ultra-minimal shell wrappers (3 lines) that delegate to Rust binary
 - Consistent UX across all shells through pure Rust implementation
 - Leverage `inquire`'s built-in patterns instead of mimicking shell completion quirks
@@ -161,7 +175,7 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 **Phase 3.1a: Add `inquire` Dependency and Basic Structure**
 - [x] **Decision Made**: `inquire` selected as terminal UI crate ✅ **COMPLETED**
 - [x] Add `inquire` to Cargo.toml with required features ✅ **COMPLETED**
-- [x] Create basic `interactive-navigate` subcommand stub ✅ **COMPLETED**
+- [x] Create basic `interactive` subcommand stub ✅ **COMPLETED**
 - [x] Implement basic autocomplete functionality with closure-based approach ✅ **COMPLETED**
 - [x] Test basic command structure and compilation ✅ **COMPLETED**
 
@@ -184,10 +198,10 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 - [ ] Performance testing with large directory trees (1000+ entries)
 
 **Phase 3.1e: Shell Wrapper Simplification**
-- [ ] Update bash completion to call `zcd interactive-navigate`
-- [ ] Update zsh completion to call `zcd interactive-navigate`
-- [ ] Update fish completion to call `zcd interactive-navigate`
-- [ ] Update PowerShell completion to call `zcd interactive-navigate`
+- [ ] Update bash completion to call `zcd interactive`
+- [ ] Update zsh completion to call `zcd interactive`
+- [ ] Update fish completion to call `zcd interactive`
+- [ ] Update PowerShell completion to call `zcd interactive`
 - [ ] Remove all shell-specific completion logic from generated functions
 - [ ] Validate 3-line maximum wrapper constraint across all shells
 
@@ -206,7 +220,7 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 
 **Interactive Navigation Command:**
 ```rust
-// New subcommand: zcd interactive-navigate [partial]
+// New subcommand: zcd interactive [partial]
 ### 3.2 Future Enhancement Tasks
 
 **Phase 3.2a: Advanced Completion Features**
@@ -248,7 +262,7 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 **Current Status**: Phase 3.1a complete - `inquire` selected as terminal UI solution
 
 **Next Steps**:
-1. Phase 3.1b: Add `inquire` dependency and implement basic `interactive-navigate` command
+1. Phase 3.1b: Add `inquire` dependency and implement basic `interactive` command
 2. Phase 3.1c: Integrate with existing completion logic
 3. Phase 3.1d: Update shell wrappers to use new interactive system
 
@@ -427,7 +441,7 @@ From Git's `git-completion.bash`:
 
 **CRITICAL ARCHITECTURE CHANGE:**
 - **Pure Rust completion**: All completion logic implemented in Rust using `inquire` terminal UI crate
-- **Minimal shell wrappers**: 3-line functions that delegate to `zcd interactive-navigate`
+- **Minimal shell wrappers**: 3-line functions that delegate to `zcd interactive`
 - **Consistent UX**: Same completion behavior across all shells using `inquire`'s built-in patterns
 - **Reliable operation**: No shell-specific completion system dependencies
 
@@ -441,7 +455,7 @@ From Git's `git-completion.bash`:
 
 - [ ] 3.1b: **Add `inquire` Dependency and Basic Structure**
   - Add `inquire` to Cargo.toml with required features
-  - Create `interactive-navigate` subcommand in CLI structure
+  - Create `interactive` subcommand in CLI structure
   - Implement `PathAutocomplete` struct with `Autocomplete` trait
   - Test basic autocomplete functionality with hardcoded suggestions
   - Validate `inquire` integration and basic prompt behavior
@@ -461,10 +475,10 @@ From Git's `git-completion.bash`:
   - Add fuzzy matching option for partial path components
 
 - [ ] 3.1e: **Simplify Shell Functions to 3-Line Wrappers**
-  - Update bash completion to call `zcd interactive-navigate`
-  - Update zsh completion to call `zcd interactive-navigate`
-  - Update fish completion to call `zcd interactive-navigate`
-  - Update PowerShell completion to call `zcd interactive-navigate`
+  - Update bash completion to call `zcd interactive`
+  - Update zsh completion to call `zcd interactive`
+  - Update fish completion to call `zcd interactive`
+  - Update PowerShell completion to call `zcd interactive`
   - Remove all shell-specific completion logic from generated functions
   - Validate 3-line maximum wrapper constraint across all shells
 
@@ -516,11 +530,11 @@ From Git's `git-completion.bash`:
 **`inquire`-Specific Validation Criteria:**
 - [x] **Terminal UI Crate Selection**: `inquire` selected and decision documented ✅ **COMPLETED**
 - [ ] **`inquire` Integration**: Successfully added to Cargo.toml and basic autocomplete working
-- [ ] **Interactive Navigation**: `zcd interactive-navigate` command implemented with `inquire` prompts
+- [ ] **Interactive Navigation**: `zcd interactive` command implemented with `inquire` prompts
 - [ ] **Autocomplete Implementation**: `PathAutocomplete` struct integrates with existing `complete_paths()` logic
 - [ ] **Real-time Filtering**: `inquire` autocomplete responds to user typing with <50ms performance
 - [ ] **Visual Enhancement**: Frecency scores (`★★★☆☆`) and path categorization displayed in suggestions
-- [ ] **Shell Wrapper Simplification**: All shell functions reduced to ≤3 lines calling `zcd interactive-navigate`
+- [ ] **Shell Wrapper Simplification**: All shell functions reduced to ≤3 lines calling `zcd interactive`
 - [ ] **Cross-Shell Consistency**: Same `inquire`-based UX in bash/zsh/fish/PowerShell
 - [ ] **TAB Completion Flow**: `z proj<TAB>` → `inquire` menu → user selection → `cd /selected/path`
 - [ ] **Performance Targets**: Menu display <100ms, filtering <50ms, navigation <20ms
@@ -686,7 +700,7 @@ This ensures you maintain control while I handle the technical execution.### Rol
 - Configurable limit and current directory options
 
 **Future Implementation (Phase 3.1):**
-- `zcd interactive-navigate <args>` - Git-style interactive completion
+- `zcd interactive <args>` - menu interactive completion
 - Handles TAB cycling and dropdown menu in Rust
 - Returns shell commands for execution
 
@@ -700,7 +714,7 @@ This ensures you maintain control while I handle the technical execution.### Rol
 ### Shell Function Generation
 **Implementation Requirements:**
 - Generate minimal shell functions (3 lines maximum)
-- Functions call `zcd interactive-navigate` and execute returned commands
+- Functions call `zcd interactive` and execute returned commands
 - Support bash, zsh, fish, and powershell with consistent behavior
 - Remove complex logic from shell scripts - move to Rust binary
 
@@ -748,16 +762,14 @@ This ensures you maintain control while I handle the technical execution.### Rol
 - Existing fzf integration for `zcd query --interactive`
 
 #### Add for Phase 3.1: Interactive Completion UI
-**Decision Required:** Choose terminal UI crate for git-style completion:
+**Decision Required:** Choose terminal UI crate for completion:
 
 **Option A: `crossterm` + custom logic**
-- **Pros**: Lightweight, full control over TAB behavior
-- **Cons**: More implementation work
-- **Use case**: Raw terminal control for exact git behavior
+- **Pros**: eliminated
 
 **Option B: `dialoguer`**
 - **Pros**: Built for interactive prompts, clean API
-- **Cons**: May not support exact git-style TAB cycling
+- **Cons**: May not support TAB cycling
 - **Use case**: Selection menus with reasonable defaults
 
 **Option C: `inquire`**
@@ -765,7 +777,7 @@ This ensures you maintain control while I handle the technical execution.### Rol
 - **Cons**: Heavier, may be overkill for simple cycling
 - **Use case**: Rich completion with search capabilities
 
-**Recommendation**: Start with `dialoguer` for MVP, evaluate if git-exact behavior requires `crossterm`
+**Recommendation**: Start with `inquire` for MVP, evaluate if git-exact behavior requires `crossterm`
 
 ### Risk Mitigation
 - **Database compatibility**: Auto-import zoxide databases on first run

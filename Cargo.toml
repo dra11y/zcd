@@ -1,7 +1,7 @@
 [package]
 authors = ["Tom Grushka <tom@dra11y.com>", "Ajeet D'Souza <98ajeet@gmail.com>"]
 categories = ["command-line-utilities", "filesystem"]
-description = "A smarter cd command for your terminal, with git-style <TAB> completion that works."
+description = "A smarter cd command for your terminal, with <TAB> and menu completion that works."
 edition = "2024"
 homepage = "https://github.com/dra11y/zcd"
 keywords = ["cli", "filesystem", "shell", "tool", "utility"]
@@ -58,7 +58,7 @@ strip = true
 # [package.metadata.deb]
 # assets = [["target/release/zcd", "usr/bin/", "755"], ["contrib/completions/zcd.bash", "usr/share/bash-completion/completions/zcd", "644"], ["contrib/completions/zcd.fish", "usr/share/fish/vendor_completions.d/", "664"], ["contrib/completions/_zcd", "usr/share/zsh/vendor-completions/", "644"], ["man/man1/*", "usr/share/man/man1/", "644"], ["README.md", "usr/share/doc/zcd/", "644"], ["CHANGELOG.md", "usr/share/doc/zcd/", "644"], ["LICENSE", "usr/share/doc/zcd/", "644"]]
 # extended-description = """\
-# zcd is a smarter cd command with git-style <TAB> completion, forked from zcd, inspired by z and autojump. It remembers which \
+# zcd is a smarter cd command with <TAB> and menu completion, forked from zcd, inspired by z and autojump. It remembers which \
 # directories you use most frequently, so you can "jump" to them in just a few \
 # keystrokes."""
 # priority = "optional"
