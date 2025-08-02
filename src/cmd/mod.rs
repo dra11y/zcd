@@ -4,6 +4,7 @@ mod complete;
 mod edit;
 mod import;
 mod init;
+mod interactive;
 mod query;
 mod remove;
 
@@ -23,6 +24,7 @@ impl Run for Cmd {
             Cmd::Edit(cmd) => cmd.run(),
             Cmd::Import(cmd) => cmd.run(),
             Cmd::Init(cmd) => cmd.run(),
+            Cmd::Interactive(cmd) => cmd.run(),
             Cmd::Query(cmd) => cmd.run(),
             Cmd::Remove(cmd) => cmd.run(),
         }

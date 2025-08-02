@@ -67,9 +67,16 @@ z() {{
 }}
 
 _z_complete() {{
-    local candidates
-    candidates="$(${{_ZCD_EXECUTABLE:-zcd}} complete "${{words[CURRENT]}}" 2>/dev/null)"
-    compadd -- ${{(f)candidates}}
+    local result
+    result="$(${{_ZCD_EXECUTABLE:-zcd}} interactive "${{words[CURRENT]}}" 2>/dev/null)"
+    if [[ -n "$result" ]]; then
+        # Execute the returned command (cd 'path')
+        eval "$result"
+        # Trigger completion acceptance
+        BUFFER="z ${{words[CURRENT]}}"
+        CURSOR=${{#BUFFER}}
+        zle accept-line
+    fi
 }}
 compdef _z_complete {cmd}"#
     )

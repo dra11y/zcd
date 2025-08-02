@@ -128,6 +128,17 @@ _arguments "${_arguments_options[@]}" : \
 ':shell:(bash elvish fish nushell posix powershell tcsh xonsh zsh)' \
 && ret=0
 ;;
+(interactive)
+_arguments "${_arguments_options[@]}" : \
+'--limit=[Maximum number of suggestions to show]:LIMIT:_default' \
+'--filesystem-only[Skip database and use only filesystem completion]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+'::partial -- Partial path to start with:_default' \
+&& ret=0
+;;
 (query)
 _arguments "${_arguments_options[@]}" : \
 '--exclude=[Exclude the current directory]:path:_files -/' \
@@ -168,6 +179,7 @@ _zcd_commands() {
 'edit:Edit the database' \
 'import:Import entries from another application' \
 'init:Generate shell configuration' \
+'interactive:Interactive directory navigation with terminal UI' \
 'query:Search for a directory in the database' \
 'remove:Remove a directory from the database' \
     )
@@ -222,6 +234,11 @@ _zcd__import_commands() {
 _zcd__init_commands() {
     local commands; commands=()
     _describe -t commands 'zcd init commands' commands "$@"
+}
+(( $+functions[_zcd__interactive_commands] )) ||
+_zcd__interactive_commands() {
+    local commands; commands=()
+    _describe -t commands 'zcd interactive commands' commands "$@"
 }
 (( $+functions[_zcd__query_commands] )) ||
 _zcd__query_commands() {

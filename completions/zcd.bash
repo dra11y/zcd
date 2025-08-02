@@ -31,6 +31,9 @@ _zcd() {
             zcd,init)
                 cmd="zcd__init"
                 ;;
+            zcd,interactive)
+                cmd="zcd__interactive"
+                ;;
             zcd,query)
                 cmd="zcd__query"
                 ;;
@@ -56,7 +59,7 @@ _zcd() {
 
     case "${cmd}" in
         zcd)
-            opts="-h -V --help --version add complete edit import init query remove"
+            opts="-h -V --help --version add complete edit import init interactive query remove"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -214,6 +217,24 @@ _zcd() {
                     ;;
                 --hook)
                     COMPREPLY=($(compgen -W "none prompt pwd" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        zcd__interactive)
+            opts="-h -V --limit --filesystem-only --help --version [PARTIAL]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --limit)
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)

@@ -47,6 +47,7 @@ pub enum Cmd {
     Edit(Edit),
     Import(Import),
     Init(Init),
+    Interactive(Interactive),
     Query(Query),
     Remove(Remove),
 }
@@ -164,6 +165,25 @@ pub enum InitHook {
     None,
     Prompt,
     Pwd,
+}
+
+/// Interactive directory navigation with terminal UI
+#[derive(Debug, Parser)]
+#[clap(
+    author,
+    help_template = HelpTemplate,
+)]
+pub struct Interactive {
+    /// Partial path to start with
+    pub partial: Option<String>,
+
+    /// Maximum number of suggestions to show
+    #[clap(long, default_value = "20")]
+    pub limit: usize,
+
+    /// Skip database and use only filesystem completion
+    #[clap(long)]
+    pub filesystem_only: bool,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug)]

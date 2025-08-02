@@ -101,6 +101,15 @@ echo "Manual testing required"
 
 ## Phase 3: Enhanced Features
 
+### 🔧 Development Environment Setup
+
+**IMPORTANT**: The test environment completions are loaded from test_env.sh automatically in ~/.zshrc. If completions don't work in testing, 1. read this file to ensure it is updated to work with our current state, then 2. undefine `_z_complete`, 3. source it again. It guards on:
+```zsh
+if (( ${+functions[_z_complete]} )); then
+    return
+fi
+```
+
 ### 3.1 Pure Rust Completion Implementation with `inquire`
 
 **✅ DECISION: `inquire` Selected as Terminal UI Crate**
@@ -113,18 +122,54 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 - Consistent UX across all shells through pure Rust implementation
 - Leverage `inquire`'s built-in patterns instead of mimicking shell completion quirks
 
+### Interactive Testing Protocol
+
+**Challenge**: `inquire` prompts require user input, making automated testing insufficient.
+
+**Solution**: Structured interactive testing with clear instructions and verification.
+
+**3-Step Testing Protocol:**
+
+1. **Instruction Phase**: I provide specific action instructions
+   - "Type '/home' and press TAB"
+   - "Use arrow keys to select 2nd option and press Enter"
+   - "Press Escape to cancel"
+   - "Type 'xyz' (non-existent path) and press TAB"
+
+2. **Execution Phase**: You perform the action and report the result
+   - Expected: Command succeeds/fails as predicted
+   - Unexpected: Describe what actually happened
+
+3. **Verification Phase**: I ask targeted yes/no questions (90% of cases)
+   - "Did the completion menu appear with 3 options? (yes/no)"
+   - "Did it navigate to /home/user/projects? (yes/no)"
+   - "Did the command exit cleanly with no output? (yes/no)"
+   - Complex cases: "What was the output/behavior?" (10% of cases)
+
+**Testing Categories:**
+- **Basic Navigation**: TAB completion, Enter selection, Escape cancellation
+- **Edge Cases**: Non-existent paths, empty input, large result sets
+- **Performance**: Response time for large directories, real-time filtering
+- **Cross-Platform**: Behavior consistency across terminal emulators
+
+**Efficiency Optimizations:**
+- Test multiple scenarios in single session when possible
+- Use filesystem-only mode to avoid database dependency
+- Pre-populate test directories for consistent results
+- Clear success/failure criteria before each test
+
 **Phase 3.1a: Add `inquire` Dependency and Basic Structure**
 - [x] **Decision Made**: `inquire` selected as terminal UI crate ✅ **COMPLETED**
-- [ ] Add `inquire` to Cargo.toml with required features
-- [ ] Create basic `interactive-navigate` subcommand stub
-- [ ] Implement `PathAutocomplete` struct with `Autocomplete` trait
-- [ ] Test basic autocomplete functionality with hardcoded suggestions
+- [x] Add `inquire` to Cargo.toml with required features ✅ **COMPLETED**
+- [x] Create basic `interactive-navigate` subcommand stub ✅ **COMPLETED**
+- [x] Implement basic autocomplete functionality with closure-based approach ✅ **COMPLETED**
+- [x] Test basic command structure and compilation ✅ **COMPLETED**
 
 **Phase 3.1b: Implement Core Completion Logic**
-- [ ] Integrate existing `complete_paths()` function with `PathAutocomplete`
-- [ ] Implement database + filesystem result merging in autocomplete context
-- [ ] Add frecency scoring display in completion suggestions
-- [ ] Test with realistic directory completion scenarios
+- [x] Integrate existing `complete_paths()` function with autocomplete closure ✅ **COMPLETED**
+- [x] Implement database + filesystem result merging in autocomplete context ✅ **COMPLETED**
+- [ ] Add frecency scoring display in completion suggestions (`★★★☆☆` style)
+- [ ] Test with realistic directory completion scenarios using interactive protocol
 
 **Phase 3.1c: Enhanced Menu Display and Navigation**
 - [ ] Implement visual scoring indicators (`★★★☆☆` style for frecency)

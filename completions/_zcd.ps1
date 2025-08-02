@@ -30,6 +30,7 @@ Register-ArgumentCompleter -Native -CommandName 'zcd' -ScriptBlock {
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit the database')
             [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import entries from another application')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Generate shell configuration')
+            [CompletionResult]::new('interactive', 'interactive', [CompletionResultType]::ParameterValue, 'Interactive directory navigation with terminal UI')
             [CompletionResult]::new('query', 'query', [CompletionResultType]::ParameterValue, 'Search for a directory in the database')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a directory from the database')
             break
@@ -104,6 +105,15 @@ Register-ArgumentCompleter -Native -CommandName 'zcd' -ScriptBlock {
             [CompletionResult]::new('--cmd', '--cmd', [CompletionResultType]::ParameterName, 'Changes the prefix of the `z` and `zi` commands')
             [CompletionResult]::new('--hook', '--hook', [CompletionResultType]::ParameterName, 'Changes how often zcd increments a directory''s score')
             [CompletionResult]::new('--no-cmd', '--no-cmd', [CompletionResultType]::ParameterName, 'Prevents zcd from defining the `z` and `zi` commands')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
+            break
+        }
+        'zcd;interactive' {
+            [CompletionResult]::new('--limit', '--limit', [CompletionResultType]::ParameterName, 'Maximum number of suggestions to show')
+            [CompletionResult]::new('--filesystem-only', '--filesystem-only', [CompletionResultType]::ParameterName, 'Skip database and use only filesystem completion')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')

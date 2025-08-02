@@ -31,6 +31,7 @@ complete -c zcd -n "__fish_zcd_needs_command" -f -a "complete" -d 'Generate comp
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "edit" -d 'Edit the database'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "import" -d 'Import entries from another application'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "init" -d 'Generate shell configuration'
+complete -c zcd -n "__fish_zcd_needs_command" -f -a "interactive" -d 'Interactive directory navigation with terminal UI'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "query" -d 'Search for a directory in the database'
 complete -c zcd -n "__fish_zcd_needs_command" -f -a "remove" -d 'Remove a directory from the database'
 complete -c zcd -n "__fish_zcd_using_subcommand add" -s s -l score -d 'The rank to increment the entry if it exists or initialize it with if it doesn\'t' -r
@@ -67,6 +68,10 @@ pwd\t''"
 complete -c zcd -n "__fish_zcd_using_subcommand init" -l no-cmd -d 'Prevents zcd from defining the `z` and `zi` commands'
 complete -c zcd -n "__fish_zcd_using_subcommand init" -s h -l help -d 'Print help'
 complete -c zcd -n "__fish_zcd_using_subcommand init" -s V -l version -d 'Print version'
+complete -c zcd -n "__fish_zcd_using_subcommand interactive" -l limit -d 'Maximum number of suggestions to show' -r
+complete -c zcd -n "__fish_zcd_using_subcommand interactive" -l filesystem-only -d 'Skip database and use only filesystem completion'
+complete -c zcd -n "__fish_zcd_using_subcommand interactive" -s h -l help -d 'Print help'
+complete -c zcd -n "__fish_zcd_using_subcommand interactive" -s V -l version -d 'Print version'
 complete -c zcd -n "__fish_zcd_using_subcommand query" -l exclude -d 'Exclude the current directory' -r -f -a "(__fish_complete_directories)"
 complete -c zcd -n "__fish_zcd_using_subcommand query" -s a -l all -d 'Show unavailable directories'
 complete -c zcd -n "__fish_zcd_using_subcommand query" -s i -l interactive -d 'Use interactive selection'

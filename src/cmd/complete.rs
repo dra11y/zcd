@@ -20,7 +20,11 @@ impl Run for Complete {
 }
 
 /// Main completion logic - queries database for paths matching partial input
-fn complete_paths(partial: &str, limit: usize, current_dir: Option<&Path>) -> Result<Vec<String>> {
+pub fn complete_paths(
+    partial: &str,
+    limit: usize,
+    current_dir: Option<&Path>,
+) -> Result<Vec<String>> {
     let mut db = Database::open()?;
     let now = util::current_time()?;
 
@@ -63,7 +67,7 @@ fn complete_paths(partial: &str, limit: usize, current_dir: Option<&Path>) -> Re
 }
 
 /// Get subdirectories from current directory that match the partial input
-fn current_dir_subdirs(
+pub fn current_dir_subdirs(
     partial: &str,
     current_dir: Option<&Path>,
     limit: usize,
