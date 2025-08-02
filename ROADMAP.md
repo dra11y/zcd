@@ -4,7 +4,7 @@
 Fork zoxide to create working tab completion with pure Rust implementation, eliminating external dependencies and complex shell scripts.
 
 ## **CRITICAL: TAB COMPLETION RULES**:
-The reason we are doing this in Rust is so we have consistent, predictable behavior without errors across all shells that support any form of basic TAB completion function wrappers.
+The reason we are doing this in Rust is so we have consistent, predictable behavior without errors across all shells that support any form of basic TAB completion function wrappers. Therefore, we must NOT rely on shell native behavior, because this would be too hard to maintain and test.
 1. z ..<TAB> -> nothing (except BEEP!), just like cd ..<TAB> behavior
 2. z ../<TAB> -> menu with parent directory entries (siblings), first entry selected
 3. The above should be recursive, i.e. z ../..<TAB> -> nothing, z ../../<TAB> -> menu with grandparent directory entries, and so on.
@@ -19,8 +19,7 @@ z mydir<TAB> -> dropdown menu, in order of: current directory child match, if an
 
 **KEY ARCHITECTURE:**
 - **Pure Rust completion UI**: All completion logic, cycling, and display handled by Rust binary
-- **Minimal shell integration**: 3-line shell wrapper maximum
-- **Interactive completion**: `zcd interactive` returns shell commands to execute
+- **Minimal shell integration**: small z() wrapper and small completion wrapper tailored to each shell to pass TAB completion logic to rust binary
 - **Terminal UI-based behavior**: Reliable completion UX using proven Rust terminal UI crates
 
 ## Immediate Actions (Foundation)
@@ -211,16 +210,9 @@ After comprehensive evaluation, `inquire` was selected for its built-in autocomp
 - [ ] Error handling for unsupported terminals or missing `inquire` features
 - [ ] Performance validation on different platforms (macOS/Linux/Windows)
 - [ ] User acceptance testing with common completion workflows
-        // Call existing complete_paths() function
-        // Return database matches + filesystem results
-        // Apply frecency scoring and limits
-    }
-}
-```
 
 **Interactive Navigation Command:**
-```rust
-// New subcommand: zcd interactive [partial]
+
 ### 3.2 Future Enhancement Tasks
 
 **Phase 3.2a: Advanced Completion Features**
