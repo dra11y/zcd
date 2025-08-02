@@ -9,9 +9,8 @@ use crate::util;
 
 impl Run for Complete {
     fn run(&self) -> Result<()> {
-        // Get current directory from environment instead of requiring parameter
-        let current_dir = std::env::current_dir().ok();
-        let paths = complete_paths(&self.partial, self.limit, current_dir.as_deref())?;
+        let current_dir = std::env::current_dir()?;
+        let paths = complete_paths(&self.partial, self.limit, Some(&current_dir))?;
 
         for path in paths {
             println!("{path}");
@@ -146,11 +145,32 @@ pub fn current_dir_subdirs(
     current_dir: Option<&Path>,
     limit: usize,
 ) -> Result<Vec<String>> {
-    let dir = current_dir.unwrap_or_else(|| Path::new("."));
+    let base_dir = current_dir.unwrap_or_else(|| Path::new("."));
+
+    // Handle different completion cases
+    let (search_dir, filter_prefix) = if partial.is_empty() {
+        // Empty partial - search current directory
+        (base_dir.to_path_buf(), "")
+    } else if partial == ".." {
+        // Just ".." - no completion (matches cd behavior)
+        return Ok(Vec::new());
+    } else if partial.starts_with("../") {
+        // "../something" - search parent directory
+        let parent = base_dir.parent().unwrap_or(base_dir);
+        let remaining = &partial[3..]; // Remove "../" prefix
+        (parent.to_path_buf(), remaining)
+    } else if partial.starts_with("./") {
+        // "./something" - search current directory
+        let remaining = &partial[2..]; // Remove "./" prefix
+        (base_dir.to_path_buf(), remaining)
+    } else {
+        // Regular partial - search current directory
+        (base_dir.to_path_buf(), partial)
+    };
 
     let mut results = Vec::new();
 
-    if let Ok(entries) = fs::read_dir(dir) {
+    if let Ok(entries) = fs::read_dir(&search_dir) {
         for entry in entries.flatten() {
             if results.len() >= limit {
                 break;
@@ -159,10 +179,17 @@ pub fn current_dir_subdirs(
             let path = entry.path();
             if path.is_dir() {
                 if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
-                    // For filesystem completion, match against directory name, not full path
-                    if partial.is_empty() || dir_name.starts_with(partial) {
-                        // Use relative path for current directory subdirectories
-                        results.push(dir_name.to_string());
+                    // For filesystem completion, match against directory name
+                    if filter_prefix.is_empty() || dir_name.starts_with(filter_prefix) {
+                        // Format the result based on the original partial pattern
+                        let formatted_result = if partial.starts_with("../") {
+                            format!("../{}", dir_name)
+                        } else if partial.starts_with("./") {
+                            format!("./{}", dir_name)
+                        } else {
+                            dir_name.to_string()
+                        };
+                        results.push(formatted_result);
                     }
                 }
             }
